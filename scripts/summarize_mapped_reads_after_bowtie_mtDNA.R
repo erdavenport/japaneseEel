@@ -21,7 +21,7 @@ suppressMessages(library("dplyr"))
 
 
 ##### Get list of files:
-path <- "../data/STACKS_processed/3_aligned_to_mitochondrial_genome/"
+path <- "data/STACKS_processed/3_aligned_to_mitochondrial_genome/"
 files <- list.files(path=path, pattern=".log")
 
 
