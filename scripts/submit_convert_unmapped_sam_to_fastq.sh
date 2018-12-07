@@ -33,8 +33,8 @@ echo $prefix
 cd /SSD/$USER/$JOB_ID/
 
 # Convert unmapped reads in sam file back to fastq:
-/programs/samtools-1.3/bin/samtools view -b -f 4 myfile.sam > myfile.bam
-/programs/samtools-1.3/bin/samtools bam2fq myfile.bam > ${prefix}_unmapped.fastq
+/programs/samtools-1.9/bin/samtools view -b -f 4 myfile.sam > myfile.bam
+/programs/samtools-1.9/bin/samtools bam2fq myfile.bam > ${prefix}_unmapped.fastq
 
 # Move out written files to specified location:
 cp *.fastq $3
