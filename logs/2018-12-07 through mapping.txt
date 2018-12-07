@@ -1,0 +1,162 @@
+# 2018-12-07
+
+# Trim PE reads to 100bp using fastx-toolkit (from cbsulogin)
+
+# Make new directory for output files:
+mkdir /fs/cbsufsrv5/data2/japaneseEel/data/fastq_files_updated/36manli2_pe_trimmed/
+
+# Unzip fastq.gz file
+gunzip /fs/cbsufsrv5/data2/japaneseEel/data/fastq_files_updated/36manli2_R1.fastq.gz
+
+# Submit script ot trim reads to 100bp:
+qsub scripts/submit_fastx_trim_pe_reads.sh /fs/cbsufsrv5/data2/japaneseEel/data/fastq_files_updated/ 36manli2_R1.fastq /fs/cbsufsrv5/data2/japaneseEel/data/fastq_files_updated/36manli2_pe_trimmed/
+
+# Zip up fastq files:
+gzip /fs/cbsufsrv5/data2/japaneseEel/data/fastq_files_updated/36manli2_R1.fastq
+gzip /fs/cbsufsrv/data2/japaneseEel/data/fastq_files_updated/36manli2_pe_trimmed/36manli2_R1.fastq
+
+# Combine the trimmed PE reads witht he SE reads for manli2 (from `cbsufsrv5`)
+
+# Combine li2 files:
+zcat data/fastq_files_updated/36manli2_pe_trimmed/36manli2_R1.fastq.gz data/fastq_files_updated/32manli2_R1.fastq.gz > data/fastq_files_updated/32_36_manli2_R1_merged.fastq
+
+# zip up the merged file:
+gzip data/fastq_files_updated/32_36_manli2_R1_merged.fastq
+
+
+# Prep data for STACKS
+
+### Step 1: Make accessory files for STACKS
+
+# First, make a barcode file for stacks [from `cbsulm06`]:
+
+scripts/make_bcfiles_for_STACKS.R
+
+# Next, make a population map file for stacks [from `cbsulm06`]:
+
+scripts/make_population_map_file_for_STACKS.R
+
+# Step 2: Process radtags
+#Finally, run `process_radtags` to QC the reads and demultiplex the samples [from `cbsulm06`]:
+
+
+# Process 32manli1 SE:
+/programs/stacks-1.48/bin/process_radtags \
+	-f /fs/cbsufsrv5/data2/japaneseEel/data/fastq_files_updated/32manli1_R1.fastq.gz \
+	-i 'gzfastq' \
+	-o /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/0_process_radtags_out/ \
+	-b data/sample_info/bcfile_manli1_for_stacks.txt \
+	-c \
+	-q \
+	-D \
+	-e 'kpnI' \
+	--inline_null
+
+# Process merged manli2 file:
+/programs/stacks-1.48/bin/process_radtags \
+	-f /fs/cbsufsrv5/data2/japaneseEel/data/fastq_files_updated/32_36_manli2_R1_merged.fastq.gz \
+	-i 'gzfastq' \
+	-o /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/0_process_radtags_out/ \
+	-b data/sample_info/bcfile_manli2_for_stacks.txt \
+	-c \
+	-q \
+	-D \
+	-e 'kpnI' \
+	--inline_null
+
+### Step 4: Map reads to genome
+Unzip Stacks processed fastq (in `data/STACKS_processed/0_process_radtags_out/` on `cbsufsrv5`)
+
+```
+for i in *.gz
+do
+	echo $i
+	gunzip $i
+done
+```
+
+
+
+
+From login node, submit jobs to map reads [from `cbsulogin`]:
+# Make directory for output
+mkdir /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/
+
+# Map reads
+for i in /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/0_process_radtags_out/*.fq
+do
+myarg=`basename $i`
+qsub /fs/cbsufsrv5/data2/japaneseEel/scripts/map_fastq_using_bowtie_2_mismatches_unique_only.sh \
+	/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/0_process_radtags_out/ \
+	$myarg \
+	/fs/cbsufsrv5/data2/japaneseEel/data/genomes/a_japonica/nuclear/bowtie_indexes/ \
+	a_japonica_nuclear \
+	/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/
+done
+
+# Rezip up the fastq files (from `data/STACKS_processed/0_process_radtags_out/` on `cbsufsrv5`)
+	
+for i in *.fq
+do
+	echo $i
+	gzip $i
+done
+
+# Pull unmapped reads from sam files [from `cbsulogin`]:
+
+# Make a directory for the unmapped read files:
+mkdir /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/2_unmapped_reads_from_nuclear_genome_bowtie/
+
+# Run scripts to pull reads:
+for i in /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/*.sam
+do
+myarg=`basename $i`
+qsub scripts/submit_convert_unmapped_sam_to_fastq.sh \
+	/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/ \
+	$myarg \
+	/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/2_unmapped_reads_from_nuclear_genome_bowtie/
+done
+
+# Rename to remove the unmapped bit (from `data/STACKS_processed/2_unmapped_reads_from_nuclear_genome_bowtie/` on `cbsufsrv5`):
+for i in *.fastq
+do
+	mv $i $(echo $i | sed s/_unmapped//)
+done
+
+
+# Make directory for general processing information
+mkdir results/1_general_info/
+
+# Double check that those files have the same number of reads as we expect from the sam files:
+scripts/count_reads_not_mapped_to_nuclear_genome_fastq_files.sh
+
+# Mapping those reads to mtDNA [from `cbsulogin`]:
+
+mkdir /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/3_aligned_to_mitochondrial_genome/
+
+for i in /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/2_unmapped_reads_from_nuclear_genome_bowtie/*.fastq
+do
+myarg=`basename $i`
+qsub /fs/cbsufsrv5/data2/japaneseEel/scripts/map_fastq_using_bowtie_2_mismatches_unique_only.sh \
+	/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/2_unmapped_reads_from_nuclear_genome_bowtie/ \
+	$myarg \
+	/fs/cbsufsrv5/data2/japaneseEel/data/genomes/a_japonica/mtDNA/bowtie_indexes/ \
+	a_japonica_mtDNA \
+	/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/3_aligned_to_mitochondrial_genome/
+done
+
+# Remove the .fastq from the middle of the file name for those mtDNA mapped reads (in `/data2/japaneseEel/data/STACKS_processed/3_aligned_to_mitochondrial_genome/` on `cbsufsrv5`):
+
+for i in *
+do
+	mv $i $(echo $i | sed s/.fastq//)
+done
+
+# Count the number of reads mapping and unmapped after bowtie:
+mkdir results/2_processing_info/
+
+scripts/summarize_mapped_reads_after_bowtie_nuclear.R
+
+# Summarize the number of reads mapped to mtDNA:
+
+scripts/summarize_mapped_reads_after_bowtie_mtDNA.R
