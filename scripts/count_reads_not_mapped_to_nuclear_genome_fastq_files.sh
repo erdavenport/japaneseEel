@@ -5,9 +5,9 @@
 cd data/STACKS_processed/2_unmapped_reads_from_nuclear_genome_bowtie/
 for i in *.fastq
 do
-echo -en "$i \t" >> results/1_general_info/reads_per_sample_not_mapped_to_nuclear_genome_fastq.txt
+echo -en "$i \t" >> ../../../results/1_general_info/reads_per_sample_not_mapped_to_nuclear_genome_fastq.txt
 LINES="$(cat $i | wc -l)"
-echo $((LINES/4)) >> results/1_general_info/reads_per_sample_not_mapped_to_nuclear_genome_fastq.txt
+echo $((LINES/4)) >> ../../../results/1_general_info/reads_per_sample_not_mapped_to_nuclear_genome_fastq.txt
 done
 
 
