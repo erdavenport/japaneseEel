@@ -36,9 +36,8 @@ scripts/make_bcfiles_for_STACKS.R
 
 scripts/make_population_map_file_for_STACKS.R
 
-# Step 2: Process radtags
+#### Step 2: Process radtags
 #Finally, run `process_radtags` to QC the reads and demultiplex the samples [from `cbsulm06`]:
-
 
 # Process 32manli1 SE:
 /programs/stacks-1.48/bin/process_radtags \
@@ -65,7 +64,7 @@ scripts/make_population_map_file_for_STACKS.R
 	--inline_null
 
 ### Step 4: Map reads to genome
-Unzip Stacks processed fastq (in `data/STACKS_processed/0_process_radtags_out/` on `cbsufsrv5`)
+# Unzip Stacks processed fastq (in `data/STACKS_processed/0_process_radtags_out/` on `cbsufsrv5`)
 
 ```
 for i in *.gz
