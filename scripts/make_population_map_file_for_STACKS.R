@@ -50,7 +50,7 @@ popfile <- sample_info %>%
 	select(sample_ID, population)
 		
 # Generate population file with no JJ-107 (low sequencing depth):
-popfile_noJJ107 <- sample_info[-which(sample_info$sample_ID == "JJ-107"), ]
+popfile_noJJ107 <- popfile[-which(popfile$sample_ID == "JJ-107"), ]
 
 
 
