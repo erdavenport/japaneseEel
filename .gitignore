@@ -2,3 +2,5 @@ data/STACKS_processed/
 data/fastq_files_updated/
 data/genomes/
 logs/eelseq_analysis_log.xlsx
+.Rapp.history
+logs/~$eelseq_analysis_log.xlsx

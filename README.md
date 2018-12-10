@@ -316,6 +316,75 @@ scripts/summarize_mapped_reads_after_bowtie_mtDNA.R
 
 ## Step 1: Create stacks using a reference genome (ref_map)
 
+Make output directories:
+
+```
+mkdir -p data/STACKS_processed/4_depth_optimization/m3/
+mkdir -p data/STACKS_processed/4_depth_optimization/m6/
+mkdir -p data/STACKS_processed/4_depth_optimization/m10/
+```
+
+ref_map options:
+  
+* `-O` = the population map file  
+* `--samples` = path to where the .sam files are located (names are read from the population map file)  
+* `-b` = the batch ID  
+* `-B` = the database name (must end in _radtags)  
+* `-D` = description of the data on this run to be displayed (parameters)  
+* `--create_db` = create a database if it doesn't exist (--overw_db to overwrite it)  
+* `-m` = minimum stack depth  
+* `-T` = number of threads to execute  
+* `-X` "populations:--fstats" = calculate F statistics for each population  
+* `-o` = path to store output files  
+* `-e` = path to stacks executables  
+ 
+Run `ref_map` on cbsulm06, varying minimum stack depth (choices: 3, 6, 10) [from `cbsulm06`]:
+
+```
+# Read depth of 3 to call stack:
+/programs/stacks-1.48/bin/ref_map.pl \
+	--samples data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/ \
+	-O data/sample_info/population_file_for_stacks.txt \
+	-b 1 \
+	-B japaneseEel_radtags \
+	-D "Population RADseq Samples: m:3" \
+	--create_db \
+	-m 3 \
+	-T 4 \
+	-X "populations:--fstats" \
+	-o data/STACKS_processed/4_depth_optimization/m3/ \
+	-e /programs/stacks-1.48/bin/ 
+
+# Read depth of 6 to call stack:
+/programs/stacks-1.48/bin/ref_map.pl \
+	--samples data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/ \
+	-O data/sample_info/population_file_for_stacks.txt \
+	-b 3 \
+	-B japaneseEel_radtags \
+	-D "Population RADseq Samples: m:6" \
+	-m 6 \
+	-T 4 \
+	-X "populations:--fstats" \
+	-o data/STACKS_processed/4_depth_optimization/m6/ \
+	-e /programs/stacks-1.48/bin/ 
+
+# Read depth of 10 to call stack:
+/programs/stacks-1.48/bin/ref_map.pl \
+	--samples data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/ \
+	-O data/sample_info/population_file_for_stacks.txt \
+	-b 4 \
+	-B japaneseEel_radtags \
+	-D "Population RADseq Samples: m:10" \
+	-m 10 \
+	-T 4 \
+	-X "populations:--fstats" \
+	-o data/STACKS_processed/4_depth_optimization/m10/ \
+	-e /programs/stacks-1.48/bin/ 
+```
+
+
+
+
 ## Step 2: Run corrections module (rxstacks)
 
 ## Step 3: Reassemble the catalog after running corrections module
