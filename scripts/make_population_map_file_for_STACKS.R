@@ -44,15 +44,20 @@ assert(length(issues) == 0)
 
 
 
-##### Generate population file:
+##### Generate population files:
+# All samples:
 popfile <- sample_info %>%
 	select(sample_ID, population)
+		
+# Generate population file with no JJ-107 (low sequencing depth):
+popfile_noJJ107 <- sample_info[-which(sample_info$sample_ID == "JJ-107"), ]
 
 
 
 ##### Save population file and corrected sample info:
 write.table(sample_info, "data/sample_info/eelseq_sample_info_degrees_removed_corrected.txt", sep="\t", row.names=FALSE, quote=FALSE)
 write.table(popfile, "data/sample_info/population_file_for_stacks.txt", sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE)
+write.table(popfile_noJJ107, "data/sample_info/population_file_for_stacks_no_JJ-107.txt", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 
 
