@@ -42,7 +42,7 @@ mydesc <- opts$desc
 
 ##### Read in VCF file:
 print("reading in VCF file")
-vcf <- read.table(vcf.file, sep="\t", header=TRUE, stringsAsFactors=FALSE, skip = 9, comment.char="")
+vcf <- read.table(vcf.file, sep="\t", header=TRUE, stringsAsFactors=FALSE, skip = 10, comment.char="")
 
 
 
