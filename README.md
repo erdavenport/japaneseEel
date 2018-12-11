@@ -18,6 +18,7 @@
   - [Step 3: Reassemble the catalog after running corrections module](#step-3-reassemble-the-catalog-after-running-corrections-module)
   - [Step 4: Run populations module on catalog to calculate stats](#step-4-run-populations-module-on-catalog-to-calculate-stats)
   - [Step 5: Filter out samples with low calls and loci with high depth, rerun populations](#step-5-filter-out-samples-with-low-calls-and-loci-with-high-depth-rerun-populations)
+    - [Final data sets](#final-data-sets)
 - [Run analyses on final data set](#run-analyses-on-final-data-set)
   - [Create basic stats plots](#create-basic-stats-plots)
   - [Create phylogenetic trees from population level Fst](#create-phylogenetic-trees-from-population-level-fst)
@@ -382,21 +383,439 @@ Run `ref_map` on cbsulm06, varying minimum stack depth (choices: 3, 6, 10) [from
 	-e /programs/stacks-1.48/bin/ 
 ```
 
-
-
-
 ## Step 2: Run corrections module (rxstacks)
+
+Make output folders for rxstacks
+
+```
+mkdir -p data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/
+mkdir -p data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/
+mkdir -p data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/
+```
+
+`rxstacks` parameters:
+
+* `-b` = batch id
+* `-P` = path to stacks output files to be analyzed
+* `-t` = number of threads 
+* `--lnl_lim` = minimum log likelihood required to keep a catalog locus
+* `--conf_lim` = proportion of loci in population that must be confounded relative to the catalog locus [between 0 and 1]
+* `--prune_haplo` = prune out non-biological haplotypes unlikely to occur in the population
+* `--model_type` = 'snp' (default), 'bounded', or 'fixed'
+* `--alpha` = chi square significance level required to call a het or homozygote [either 0.1 (default), 0.05, 0.01, 0.001]
+* `--bound_high` = upper bound for error rate (between 0 an 1 (default))
+* `--verbose` = extended logging (forces single-threaded execution)
+* `--lnl_dist` = print distribution of mean log likelihoods for catalog loci 
+
+Run `rxstacks` on the three depths:
+
+```
+# Read depth of 3 to call stack:
+/programs/stacks-1.48/bin/rxstacks -b 1 \
+	-P data/STACKS_processed/4_depth_optimization/m3/ \
+	-o data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-t 2 \
+	--lnl_lim -10 \
+	--conf_lim 0.25 \
+	--prune_haplo \
+	--model_type bounded \
+	--bound_high 0.1 \
+   	--lnl_dist \
+  	--verbose \
+   	--conf_filter
+    
+# Read depth of 6 to call stack:
+/programs/stacks-1.48/bin/rxstacks -b 3 \
+	-P data/STACKS_processed/4_depth_optimization/m6/ \
+	-o data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-t 2 \
+	--lnl_lim -10 \
+	--conf_lim 0.25 \
+	--prune_haplo \
+	--model_type bounded \
+	--bound_high 0.1 \
+    --lnl_dist \
+    --verbose \
+    --conf_filter
+    
+# Read depth of 10 to call stack:
+/programs/stacks-1.48/bin/rxstacks -b 4 \
+	-P data/STACKS_processed/4_depth_optimization/m10/ \
+	-o data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-t 2 \
+	--lnl_lim -10 \
+	--conf_lim 0.25 \
+	--prune_haplo \
+	--model_type bounded \
+	--bound_high 0.1 \
+   	--lnl_dist \
+   	--verbose \
+   	--conf_filter
+``` 	
 
 ## Step 3: Reassemble the catalog after running corrections module
 
+Create scripts to rerun `cstacks` and `sstacks` after running `rxstacks`:
+
+```
+# Read depth of 3 to call stack:
+scripts/create_stacks_running_scripts.R \
+	--pop_map=data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	--b=1 \
+	--p=4 \
+	--io_path=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	--outfile=scripts/rerun_cstacks_and_sstacks_optimization_m3.sh 
+
+# Read depth of 6 to call stack:
+scripts/create_stacks_running_scripts.R \
+	--pop_map=data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	--b=3 \
+	--p=4 \
+	--io_path=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	--outfile=scripts/rerun_cstacks_and_sstacks_optimization_m6.sh 
+
+# Read depth of 10 to call stack:
+scripts/create_stacks_running_scripts.R \
+	--pop_map=data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	--b=4 \
+	--p=4 \
+	--io_path=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	--outfile=scripts/rerun_cstacks_and_sstacks_optimization_m10.sh 
+
+```
+
+Run rerun scripts:
+
+```
+chmod +x scripts/rerun*.sh
+scripts/rerun_cstacks_and_sstacks_optimization_m3.sh
+scripts/rerun_cstacks_and_sstacks_optimization_m6.sh 
+scripts/rerun_cstacks_and_sstacks_optimization_m10.sh
+```
+   
 ## Step 4: Run populations module on catalog to calculate stats
+
+`populations` parameters:
+
+* `-P` = path to stacks output files to be analyzed
+* `-b` = batch ID
+* `-M` = path to population map
+* `-t` = numer of threads to run in parallele sections of code
+* `-s` = output file to SQL database
+* `-p` = minimum number of populations a locus must be present in to process a locus.
+* `-r` = minimum percentage of individuals in a population required to process a locus for that population
+* `-m` = minimum stack depth required for individuals at a locus
+* `--write_single_snp` = restrict data analysis to only the first SNP per locus
+* `--fstats` = SNP and haplotype-based F-statistics
+* `--genomic` = output each nucleotide position (fixed or polymorphic) in all population members to a file
+* `--vcf` = output SNPs in VCF
+* `--plink` = output genotypes in plink format
+* `--verbose` = turn on logging
+
+Run the `populations` module to calculate Fst, etc:
+
+```
+# Stack depth = 3:
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-b 1 \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 3 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--verbose 
+
+# Stack depth = 6:
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-b 3 \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 6 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--verbose 
+  
+# Stack depth = 10:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-b 4 \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 10 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--verbose 
+```
 
 ## Step 5: Filter out samples with low calls and loci with high depth, rerun populations
 
+First, use vcftools to get a list of SNPs called per individual:
+
+```
+# m3
+/programs/vcftools-v0.1.14/bin/vcf-stats data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf -p data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf.stats
+
+# m6
+/programs/vcftools-v0.1.14/bin/vcf-stats data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf -p data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf.stats
+
+# m10
+/programs/vcftools-v0.1.14/bin/vcf-stats data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf -p data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf.stats	
+```
+
+Then, check number of SNPs called per sample
+
+Create output directory:
+
+```
+mkdir -p results/3_optimizing_depth/
+```
+
+```
+# m3
+scripts/plot_variants_per_sample.R \
+	--vcf_stats_counts_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf.stats.counts \
+	--desc=m3 \
+	--outpath=results/3_optimizing_depth/
+
+# m6
+scripts/plot_variants_per_sample.R \
+	--vcf_stats_counts_file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf.stats.counts \
+	--desc=m6 \
+	--outpath=results/3_optimizing_depth/
+
+# m10
+scripts/plot_variants_per_sample.R \
+	--vcf_stats_counts_file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf.stats.counts \
+	--desc=m10 \
+	--outpath=results/3_optimizing_depth/
+```
+
+For a depth of 3:
+
+![m3](results/3_optimizing_depth/m3_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.pdf)
+
+For a depth of 6:
+
+![m6](results/3_optimizing_depth/m6_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.pdf)
+
+For a depth of 10:
+
+![m10](results/3_optimizing_depth/m10_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.pdf)
+
+Second, examine mean coverage per loci in each depth.
+Filter out any locus that is more than 2 x SD higher than the mean coverage:
+
+```
+# m3
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m3
+	
+# m6
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m6
+	
+# m10
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m10 
+```
+
+Mean coverage before and after filtering (m3):
+
+![m3](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m3_121118ERD.pdf)
+
+m6:
+
+![m6](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m6_121118ERD.pdf)
+
+m10:
+
+![m10](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m10_121118ERD.pdf)
+
+Third, rerun `populations` using the whitelist to include only loci that are:
+
+* i) biallelic (loci in VCF from previous step are biallelic only) and  
+* ii) not of very high coverage (>2SD + mean coverage)  
+
+Make output directories:
+
+```
+mkdir data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/
+mkdir data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/
+mkdir data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/
+```
+
+Rerun populations:
+
+```
+# Stack depth = 3:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-b 1 \
+	-O data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 3 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+	
+# Stack depth = 6:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-b 3 \
+	-O data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 6 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+	
+# Stack depth = 10:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-b 4 \
+	-O data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 10 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+```
+
+### Final data sets
+
+The final datasets for each read depth are in the following directories on `cbsulm06`:
+
+* m3: `/workdir/japaneseEel/data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/`  
+* m6: `/workdir/japaneseEel/data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/`  
+* m10:  `/workdir/japaneseEel/data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/`  
+
+Stacks requires each batch of processing to have a batch number.
+m3 was batch\_1, m6 was batch\_3, and m10 was batch\_4. 
+In each of those folders, SNP called across all individuals are saved in multiple different formats. 
+In particular, the `batch_*.vcf` and `batch_*.plink.raw` files will be useful for further analyses. 
+SNPs saved in these files are i) bi-allelic, ii) in 60% of individuals in at least one population, iii) filtered for coverage too deep (indicating a duplication/mapping issue), and iv) filtered so that only one SNP per stack remains (to limit LD, first SNP position retained). 
+Additionally, output files from `populations` live in this folder as well, including Fst calculations between all pairs of populations.  
+
 # Run analyses on final data set
 
+Note that all results from analyses are stored in the `results/` directory. 
+If analyses were run for each of the three read depths, typically results are stored in sub-directories according to read depth (m3, m6, or m10). 
+For population-wide analyses, it seems like having more SNPs called per population gives more reliable results (m3), although results between m3 and m6 are largely consistent. 
+Some caution should be noted for examining m10 results.
+Several samples have very few SNPs called using this threshold, which affects across population comparisons. 
+In particular, pairwise comparisons between some samples could not be made because they simply don't share overlapping SNPs. 
+Therefore, I would consider m3 results to be the most robust and would use those in the final analysis. 
+
 ## Create basic stats plots
+
+Make maps of where and when samples were taken:
+
+```
+scripts/make_map_for_eelseq_project.R 
+```
+
+![map](results/1_general_info/map_sample_locations.png)
+
+![timeline](results/1_general_info/timeline_sample_collection.png)
+
 ## Create phylogenetic trees from population level Fst
+
+First, recode plink files to be in dosage format: 
+
+```
+# m3:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink
+
+# m6:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink
+
+# m10:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink
+```
+
+Make directories to store analysis output:
+
+```
+mkdir -p results/4_Fst/m3/
+mkdir -p results/4_Fst/m6/
+mkdir -p results/4_Fst/m10/
+```
+
+Next, calculate the genetic distance between all pairs of individuals: 
+
+```
+# m3
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m3/
+
+# m6	
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m6/
+
+# m10	
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m10/
+```
+
 ## Run admixture
 ## Run PCA
 

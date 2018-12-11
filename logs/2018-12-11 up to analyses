@@ -1,0 +1,415 @@
+# 2018-12-11
+
+# Make output folders for rxstacks
+
+mkdir -p data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/
+mkdir -p data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/
+mkdir -p data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/
+
+### Step 2: run corrections module (`rxstacks`)
+
+# `rxstacks` parameters:
+
+# * `-b` = batch id
+# * `-P` = path to stacks output files to be analyzed
+# * `-t` = number of threads 
+# * `--lnl_lim` = minimum log likelihood required to keep a catalog locus
+# * `--conf_lim` = proportion of loci in population that must be confounded relative to the catalog locus [between 0 and 1]
+# * `--prune_haplo` = prune out non-biological haplotypes unlikely to occur in the population
+# * `--model_type` = 'snp' (default), 'bounded', or 'fixed'
+# * `--alpha` = chi square significance level required to call a het or homozygote [either 0.1 (default), 0.05, 0.01, 0.001]
+# * `--bound_high` = upper bound for error rate (between 0 an 1 (default))
+# * `--verbose` = extended logging (forces single-threaded execution)
+# * `--lnl_dist` = print distribution of mean log likelihoods for catalog loci 
+
+# Run `rxstacks` on the three depths:
+
+# Read depth of 3 to call stack:
+/programs/stacks-1.48/bin/rxstacks -b 1 \
+	-P data/STACKS_processed/4_depth_optimization/m3/ \
+	-o data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-t 2 \
+	--lnl_lim -10 \
+	--conf_lim 0.25 \
+	--prune_haplo \
+	--model_type bounded \
+	--bound_high 0.1 \
+   	--lnl_dist \
+  	--verbose \
+   	--conf_filter
+    
+# Read depth of 6 to call stack:
+/programs/stacks-1.48/bin/rxstacks -b 3 \
+	-P data/STACKS_processed/4_depth_optimization/m6/ \
+	-o data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-t 2 \
+	--lnl_lim -10 \
+	--conf_lim 0.25 \
+	--prune_haplo \
+	--model_type bounded \
+	--bound_high 0.1 \
+    --lnl_dist \
+    --verbose \
+    --conf_filter
+    
+# Read depth of 10 to call stack:
+/programs/stacks-1.48/bin/rxstacks -b 4 \
+	-P data/STACKS_processed/4_depth_optimization/m10/ \
+	-o data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-t 2 \
+	--lnl_lim -10 \
+	--conf_lim 0.25 \
+	--prune_haplo \
+	--model_type bounded \
+	--bound_high 0.1 \
+   	--lnl_dist \
+   	--verbose \
+   	--conf_filter
+   
+
+
+
+### Step 3: Reassemble the catalog after running the corrections module
+
+# Create scripts to rerun `cstacks` and `sstacks` after running `rxstacks`:
+
+# Read depth of 3 to call stack:
+scripts/create_stacks_running_scripts.R \
+	--pop_map=data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	--b=1 \
+	--p=4 \
+	--io_path=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	--outfile=scripts/rerun_cstacks_and_sstacks_optimization_m3.sh 
+
+# Read depth of 6 to call stack:
+scripts/create_stacks_running_scripts.R \
+	--pop_map=data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	--b=3 \
+	--p=4 \
+	--io_path=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	--outfile=scripts/rerun_cstacks_and_sstacks_optimization_m6.sh 
+
+# Read depth of 10 to call stack:
+scripts/create_stacks_running_scripts.R \
+	--pop_map=data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	--b=4 \
+	--p=4 \
+	--io_path=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	--outfile=scripts/rerun_cstacks_and_sstacks_optimization_m10.sh 
+
+# Run rerun scripts:
+
+chmod +x scripts/rerun*.sh
+scripts/rerun_cstacks_and_sstacks_optimization_m3.sh
+scripts/rerun_cstacks_and_sstacks_optimization_m6.sh 
+scripts/rerun_cstacks_and_sstacks_optimization_m10.sh
+   	
+### Step 4: Run populations module on catalog
+
+#`populations` parameters:
+
+#* `-P` = path to stacks output files to be analyzed
+#* `-b` = batch ID
+#* `-M` = path to population map
+#* `-t` = numer of threads to run in parallele sections of code
+#* `-s` = output file to SQL database
+#* `-p` = minimum number of populations a locus must be present in to process a locus.
+#* `-r` = minimum percentage of individuals in a population required to process a locus for that population
+#* `-m` = minimum stack depth required for individuals at a locus
+#* `--write_single_snp` = restrict data analysis to only the first SNP per locus
+#* `--fstats` = SNP and haplotype-based F-statistics
+#* `--genomic` = output each nucleotide position (fixed or polymorphic) in all population members to a file
+#* `--vcf` = output SNPs in VCF
+#* `--plink` = output genotypes in plink format
+#* `--verbose` = turn on logging
+
+#Run the `populations` module to calculate Fst, etc:
+
+# Stack depth = 3:
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-b 1 \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 3 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--verbose 
+
+# Stack depth = 6:
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-b 3 \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 6 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--verbose 
+  
+# Stack depth = 10:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-b 4 \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 10 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--verbose 
+	
+#First, use vcftools to get a list of SNPs called per individual:
+
+# m3
+/programs/vcftools-v0.1.14/bin/vcf-stats data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf -p data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf.stats
+
+# m6
+/programs/vcftools-v0.1.14/bin/vcf-stats data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf -p data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf.stats
+
+# m10
+/programs/vcftools-v0.1.14/bin/vcf-stats data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf -p data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf.stats	
+
+
+
+
+
+
+# Then, check number of SNPs called per sample
+
+# Create output directory:
+mkdir -p results/3_optimizing_depth/
+
+# m3
+scripts/plot_variants_per_sample.R \
+	--vcf_stats_counts_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf.stats.counts \
+	--desc=m3 \
+	--outpath=results/3_optimizing_depth/
+
+# m6
+scripts/plot_variants_per_sample.R \
+	--vcf_stats_counts_file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf.stats.counts \
+	--desc=m6 \
+	--outpath=results/3_optimizing_depth/
+
+# m10
+scripts/plot_variants_per_sample.R \
+	--vcf_stats_counts_file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf.stats.counts \
+	--desc=m10 \
+	--outpath=results/3_optimizing_depth/
+	
+	
+	
+#Second, examine mean coverage per loci in each depth.
+#Filter out any locus that is more than 2 x SD higher than the mean coverage:
+
+# m3
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m3
+	
+# m6
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m6
+	
+# m10
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m10 
+	
+#Third, rerun `populations` using the whitelist to include only loci that are:
+
+#* i) biallelic (loci in VCF from previous step are biallelic only) and  
+#* ii) not of very high coverage (>2SD + mean coverage)  
+
+#code:
+
+mkdir data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/
+mkdir data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/
+mkdir data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/
+
+# Stack depth = 3:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-b 1 \
+	-O data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 3 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+	
+# Stack depth = 6:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-b 3 \
+	-O data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 6 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+	
+# Stack depth = 10:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-b 4 \
+	-O data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 10 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+
+# Analyses:
+
+# Create a map that shows the sampling locations:
+scripts/make_map_for_eelseq_project.R 
+
+# Make pngs for readme
+sips -s format png results/1_general_info/map_sample_locations.pdf --out results/1_general_info/map_sample_locations.png
+sips -s format png results/1_general_info/timeline_sample_collection.pdf --out results/1_general_info/timeline_sample_collection.png
+
+
+
+
+# make output directories:
+
+mkdir -p results/4_Fst/m3/
+mkdir -p results/4_Fst/m6/
+mkdir -p results/4_Fst/m10/
+
+
+# First, recode plink files to be dosage formatted:
+# m3:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink
+
+# m6:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink
+
+# m10:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink
+
+
+# Next, calculate the genetic distance between all pairs of individuals:
+# m3
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m3/
+
+# m6	
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m6/
+
+# m10	
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m10/
+	
+
+
+
+
+# Did not do this yet:
+
+# Create trees based on pairwise Fst and individual genetic distances:
+# m3
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.fst_summary.tsv \
+	--desc=m3 \
+	--ind_dist=results/4_Fst/m3/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m3/
+
+# m6
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.fst_summary.tsv \
+	--desc=m6 \
+	--ind_dist=results/4_Fst/m6/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m6/
+	
+# m10	
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.fst_summary.tsv \
+	--desc=m10 \
+	--ind_dist=results/4_Fst/m10/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m10/
+	
+	
+	
+Using the stack depth=3 data (m3), we can see that the outgroup clusters separately and that there is very little divergence between any of the eel species.
+In addition, samples don't necessarily cluster by population/sampling date. 
+
+![rooted tree, created using UPGMA (m3 depth)](results/6_Fst/m3/plot_Fst_rooted_tree_all_pops_110416ERD.png "rooted tree, created using UPGMA (m3 depth")
+
+Above, rooted tree created using UPGMA (m3 depth).
+
+![unrooted tree, created using neighbor-joining (m3 depth)](results/6_Fst/m3/plot_Fst_unrooted_tree_all_pops_110416ERD.png "unrooted tree, created using neighbor-joining (m3 depth")
+
+Above, unrooted tree created using neighbor-joining (m3 depth).
+
+Additionally, examined pairwise genetic distances between all individuals.
+To do this, for all SNPs that a pair shared in common, the number of differences were summed and divided by 2/number of shared SNPs. 
+This created a distance matrix that was then used to build the trees below. 
+At the individual level, no apparent clustering by either population or year of sampling.  
+
+![unrooted tree, individual genetic distances created using neighbor-joining (m3 depth)](results/6_Fst/m3/plot_individual_genetic_distance_rooted_tree_110416ERD.png "unrooted tree, created using neighbor-joining (m3 depth")
+
+Above, rooted tree of individual genetic distances (m3 depth)
+
+![rooted tree, individual genetic distances created using neighbor-joining (m3 depth)](results/6_Fst/m3/plot_individual_genetic_distance_unrooted_tree_all_110416ERD.png "unrooted tree, created using neighbor-joining (m3 depth")
+
+Above, unrooted tree of individual genetic distances (m3 depth)
+
+
