@@ -37,7 +37,7 @@ outpath <- opts$outpath
 
 ##### Load libraries and source common functions:
 suppressMessages(library(dplyr))
-source("common_functions_for_eelseq_analyses.R")
+source("scripts/common_functions_for_eelseq_analyses.R")
 
 
 
