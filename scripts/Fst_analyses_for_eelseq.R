@@ -293,6 +293,7 @@ ggsave(paste0(outpath, "plot_individual_genetic_distance_unrooted_tree_",today,"
 
 
 ##### rooted UPGMA genetic distance plot with shapes and black and white:
+print("note: not saving UPGMA genetic distance plot in black and white")
 # UPGMA
 g1Uind = as(treeUPGMAind, 'phylo4')
 indPops <- samples$pop_name[match(rownames(dm), samples$sample_ID)]
@@ -311,7 +312,7 @@ plot1 <- ggtree(g2Uind, ladderize = TRUE) +
 	xlim(0, 0.15) 
 	
 # Save ggtree plot
-ggsave(paste0(outpath, "plot_individual_genetic_distance_rooted_tree_shapes_not_colors_",today,"ERD.pdf"), plot=plot1, width=6, height=6)
+# ggsave(paste0(outpath, "plot_individual_genetic_distance_rooted_tree_shapes_not_colors_",today,"ERD.pdf"), plot=plot1, width=6, height=6)
 
 
 
