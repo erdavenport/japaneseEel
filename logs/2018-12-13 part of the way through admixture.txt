@@ -1,0 +1,117 @@
+# 2018-12-12
+
+# Did not do this yet:
+
+# Create trees based on pairwise Fst and individual genetic distances:
+# m3
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.fst_summary.tsv \
+	--desc=m3 \
+	--ind_dist=results/4_Fst/m3/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m3/
+
+# m6
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.fst_summary.tsv \
+	--desc=m6 \
+	--ind_dist=results/4_Fst/m6/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m6/
+	
+# m10	
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.fst_summary.tsv \
+	--desc=m10 \
+	--ind_dist=results/4_Fst/m10/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m10/
+	
+# Make pngs for README
+sips -s format png results/4_Fst/m3/plot_Fst_rooted_tree_all_pops_121318ERD.pdf --out results/4_Fst/m3/plot_Fst_rooted_tree_all_pops_121318ERD.png
+sips -s format png results/4_Fst/m3/plot_Fst_unrooted_tree_all_pops_121318ERD.pdf --out results/4_Fst/m3/plot_Fst_unrooted_tree_all_pops_121318ERD.png
+sips -s format png results/4_Fst/m3/plot_individual_genetic_distance_rooted_tree_121318ERD.pdf --out results/4_Fst/m3/plot_individual_genetic_distance_rooted_tree_121318ERD.png
+sips -s format png results/4_Fst/m3/plot_individual_genetic_distance_unrooted_tree_121318ERD.pdf --out results/4_Fst/m3/plot_individual_genetic_distance_unrooted_tree_121318ERD.png
+
+
+# Run admixture to discover population substructure/admixing. 
+
+# First, need to remove crazy eel contig names as chromosome or admixture won't like the file:
+
+scripts/convert_plink_chr_names_for_admixture.R --file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.map
+scripts/convert_plink_chr_names_for_admixture.R --file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.map
+scripts/convert_plink_chr_names_for_admixture.R --file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.map
+
+# Second, copy ped file with new name:
+
+cp data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.ped data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.ped
+cp data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.ped data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.ped
+cp data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.ped data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.ped
+
+
+
+# Third, use plink to convert to bed/bim/fam:
+	
+/programs/plink-1.9-x86_64-beta3.30/plink \
+	--file data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture \
+	--make-bed \
+	--allow-extra-chr \
+	--out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture
+	
+/programs/plink-1.9-x86_64-beta3.30/plink \
+	--file data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture \
+	--make-bed \
+	--allow-extra-chr \
+	--out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture
+	
+/programs/plink-1.9-x86_64-beta3.30/plink \
+	--file data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture \
+	--make-bed \
+	--allow-extra-chr \
+	--out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture
+
+
+# Fourth, run admixture. Admixture program will only save output to working directory, so create working directories for each iteration:
+
+mkdir -p results/5_admixture/m3/all_individuals/
+mkdir -p results/5_admixture/m6/all_individuals/
+mkdir -p results/5_admixture/m10/all_individuals/
+
+
+# Switch to the correct working directory and run admixture with the following parameters:
+
+# * `-j4` = use four processors 
+# * `-s` = set seed (1)
+# * `--cv` = do cross validation
+# * `-C` = set min delta to hit before declaring convergence (if float) or max iterations (int)
+# * `$K` = number of populations (K)
+
+# For m3:
+
+cd results/5_admixture/m3/all_individuals/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+
+# For m6:
+
+
+cd results/5_admixture/m6/all_individuals/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.bed $K | tee log${K}.out
+done
+
+
+# Haven't done this yet:
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
