@@ -816,7 +816,140 @@ scripts/create_individual_distance_matrix.R \
 	--outpath=results/4_Fst/m10/
 ```
 
+Create trees based on pairwise Fst and individual genetic distances:
+
+```
+# m3
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.fst_summary.tsv \
+	--desc=m3 \
+	--ind_dist=results/4_Fst/m3/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m3/
+
+# m6
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.fst_summary.tsv \
+	--desc=m6 \
+	--ind_dist=results/4_Fst/m6/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m6/
+	
+# m10	
+scripts/Fst_analyses_for_eelseq.R \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.fst_summary.tsv \
+	--desc=m10 \
+	--ind_dist=results/4_Fst/m10/table_pairwise_individual_genetic_distances.txt \
+	--outpath=results/4_Fst/m10/
+```
+	
+Using the stack depth=3 data (m3), we can see that the outgroup clusters separately and that there is very little divergence between any of the eel species.
+In addition, samples don't necessarily cluster by population/sampling date. 
+
+![rooted tree, created using UPGMA (m3 depth)](results/4_Fst/m3/plot_Fst_rooted_tree_all_pops_121318ERD.png) "rooted tree, created using UPGMA (m3 depth")
+
+Above, rooted tree created using UPGMA (m3 depth).
+
+![unrooted tree, created using neighbor-joining (m3 depth)](results/4_Fst/m3/plot_Fst_unrooted_tree_all_pops_121318ERD.png) "unrooted tree, created using neighbor-joining (m3 depth")
+
+Above, unrooted tree created using neighbor-joining (m3 depth).
+
+Additionally, examined pairwise genetic distances between all individuals.
+To do this, for all SNPs that a pair shared in common, the number of differences were summed and divided by 2/number of shared SNPs. 
+This created a distance matrix that was then used to build the trees below. 
+At the individual level, no apparent clustering by either population or year of sampling.  
+
+![unrooted tree, individual genetic distances created using neighbor-joining (m3 depth)](results/4_Fst/m3/plot_individual_genetic_distance_rooted_tree_121318ERD.png) "unrooted tree, created using neighbor-joining (m3 depth")
+Above, rooted tree of individual genetic distances (m3 depth)
+
+![rooted tree, individual genetic distances created using neighbor-joining (m3 depth)](results/4_Fst/m3/plot_individual_genetic_distance_unrooted_tree_121318ERD.png) "unrooted tree, created using neighbor-joining (m3 depth")
+
+Above, unrooted tree of individual genetic distances (m3 depth)
+
 ## Run admixture
+
+Run admixture to discover population substructure/admixing. 
+
+First, need to remove crazy eel contig names as chromosome or admixture won't like the file:
+
+```
+scripts/convert_plink_chr_names_for_admixture.R --file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.map
+scripts/convert_plink_chr_names_for_admixture.R --file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.map
+scripts/convert_plink_chr_names_for_admixture.R --file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.map
+```
+
+Second, copy ped file with new name:
+
+```
+cp data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.ped data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.ped
+cp data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.ped data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.ped
+cp data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.ped data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.ped
+```
+
+Third, use plink to convert to bed/bim/fam:
+
+```	
+/programs/plink-1.9-x86_64-beta3.30/plink \
+	--file data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture \
+	--make-bed \
+	--allow-extra-chr \
+	--out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture
+	
+/programs/plink-1.9-x86_64-beta3.30/plink \
+	--file data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture \
+	--make-bed \
+	--allow-extra-chr \
+	--out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture
+	
+/programs/plink-1.9-x86_64-beta3.30/plink \
+	--file data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture \
+	--make-bed \
+	--allow-extra-chr \
+	--out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture
+```
+
+Switch to the correct working directory and run admixture with the following parameters:
+
+* `-j4` = use four processors 
+* `-s` = set seed (1)
+* `--cv` = do cross validation
+* `-C` = set min delta to hit before declaring convergence (if float) or max iterations (int)
+* `$K` = number of populations (K)
+
+For m3:
+
+```
+# switch to running directory:
+cd results/5_admixture/m3/all_individuals/
+
+# run admixture using different values of K:
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+```
+
+For m6:
+
+```
+cd results/5_admixture/m6/all_individuals/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+```
+
 ## Run PCA
 
 
