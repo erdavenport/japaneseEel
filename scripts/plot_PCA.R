@@ -66,9 +66,16 @@ forLegend <- unique(pops$pop_name)
 
 print("saving PCA plot")
 
+# Black and White:
+# pdf(paste(outpath, "PCA.all.samples.",today,"ERD.pdf", sep=""), width=6, height=6)
+# plot(evecs[,3], evecs[,4], pch=sapply(evecs$V1, pop.pch), cex=1.5, xlab=paste("PC 1 -", (PVE[1]*100),"% of variance", sep=" "),ylab=paste("PC 2 -",(PVE[2]*100),"% of variance",sep=" ")) 
+# legend("bottomleft", cex=0.75, pch=sapply(forLegend, pop.pch), legend=forLegend, bty="n")
+# hi <- dev.off()
+
+# Color:
 pdf(paste(outpath, "PCA.all.samples.",today,"ERD.pdf", sep=""), width=6, height=6)
-plot(evecs[,3], evecs[,4], pch=sapply(evecs$V1, pop.pch), cex=1.5, xlab=paste("PC 1 -", (PVE[1]*100),"% of variance", sep=" "),ylab=paste("PC 2 -",(PVE[2]*100),"% of variance",sep=" ")) 
-legend("bottomleft", cex=0.75, pch=sapply(forLegend, pop.pch), legend=forLegend, bty="n")
+plot(evecs[,3], evecs[,4], pch=16, col = sapply(evecs$V1, pop.col), cex=1.5, xlab=paste("PC 1 -", (PVE[1]*100),"% of variance", sep=" "),ylab=paste("PC 2 -",(PVE[2]*100),"% of variance",sep=" ")) 
+legend("bottomleft", cex=0.75, pch=16, fill = sapply(forLegend, pop.col), legend=forLegend, bty="n")
 hi <- dev.off()
 
 
@@ -82,11 +89,17 @@ forLegend <- forLegend[-which(forLegend == "Hainan province")]
 
 print("saving PCA plot")
 
-pdf(paste(outpath, "PCA.no.outgroup.",today,"ERD.pdf", sep=""), width=6, height=6)
-plot(evecsNoOut[,3], evecsNoOut[,4], pch=sapply(evecsNoOut$V1, pop.pch), col=rgb(0,0,0, alpha = 0.5), cex=1.5, xlab=paste("PC 1 -", (PVENoOut[1]*100),"% of variance", sep=" "),ylab=paste("PC 2 -",(PVENoOut[2]*100),"% of variance",sep=" ")) 
-legend("topleft", cex=0.75, pch=sapply(forLegend, pop.pch), legend=forLegend, bty="n")
-hi <- dev.off()
+# Black and White:
+# pdf(paste(outpath, "PCA.no.outgroup.",today,"ERD.pdf", sep=""), width=6, height=6)
+# plot(evecsNoOut[,3], evecsNoOut[,4], pch=sapply(evecsNoOut$V1, pop.pch), col=rgb(0,0,0, alpha = 0.5), cex=1.5, xlab=paste("PC 1 -", (PVENoOut[1]*100),"% of variance", sep=" "),ylab=paste("PC 2 -",(PVENoOut[2]*100),"% of variance",sep=" ")) 
+# legend("topleft", cex=0.75, pch=sapply(forLegend, pop.pch), legend=forLegend, bty="n")
+# hi <- dev.off()
 
+# Color:
+pdf(paste(outpath, "PCA.no.outgroup.",today,"ERD.pdf", sep=""), width=6, height=6)
+plot(evecsNoOut[,3], evecsNoOut[,4], pch=16, col = sapply(evecsNoOut$V1, pop.col), col=rgb(0,0,0, alpha = 0.5), cex=1.5, xlab=paste("PC 1 -", (PVENoOut[1]*100),"% of variance", sep=" "),ylab=paste("PC 2 -",(PVENoOut[2]*100),"% of variance",sep=" ")) 
+legend("topleft", cex=0.75, pch=16, fill = sapply(forLegend, pop.col), legend=forLegend, bty="n")
+hi <- dev.off()
 
   
 print("DONE!")
