@@ -5,3 +5,4 @@ logs/eelseq_analysis_log.xlsx
 .Rapp.history
 logs/~$eelseq_analysis_log.xlsx
 .Rhistory
+results/5_admixture/
