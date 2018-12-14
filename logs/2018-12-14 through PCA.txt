@@ -1,0 +1,202 @@
+# 2018-12-14
+
+# m6 (did not converge overnight - reset random seed)
+cd results/5_admixture/m6/all_individuals/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 2 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+
+
+# m10 
+cd results/5_admixture/m10/all_individuals/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+
+# Plot optimal number of populations for each of the stack depths:
+
+for i in m3 m6 m10
+do
+scripts/plot_admixture_CVs.R \
+	--cv_file=results/5_admixture/$i/all_individuals/admixture_cross_validations.txt  \
+	--outfile=results/5_admixture/$i/all_individuals/plot_admixture_cross_validations_${i}.pdf
+done
+
+# Make pngs for README:
+sips -s format png results/5_admixture/m3/all_individuals/plot_admixture_cross_validations_m3.pdf --out results/5_admixture/m3/all_individuals/plot_admixture_cross_validations_m3.png
+sips -s format png results/5_admixture/m6/all_individuals/plot_admixture_cross_validations_m6.pdf --out results/5_admixture/m6/all_individuals/plot_admixture_cross_validations_m6.png
+sips -s format png results/5_admixture/m10/all_individuals/plot_admixture_cross_validations_m10.pdf --out results/5_admixture/m10/all_individuals/plot_admixture_cross_validations_m10.png
+
+# Plot optimal number of populations:
+
+# m3
+scripts/plot_admixture_barchart.R \
+	--Q_file=results/5_admixture/m3/all_individuals/batch_1.plink.for.admixture.2.Q \
+	--fam_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.fam \
+	--K=2 \
+	--outfile=results/5_admixture/m3/all_individuals/plot_admixture_K2.pdf
+
+# m6
+scripts/plot_admixture_barchart.R \
+	--Q_file=results/5_admixture/m6/all_individuals/batch_3.plink.for.admixture.2.Q \
+	--fam_file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.fam \
+	--K=2 \
+	--outfile=results/5_admixture/m6/all_individuals/plot_admixture_K2.pdf
+	
+# m10
+scripts/plot_admixture_barchart.R \
+	--Q_file=results/5_admixture/m10/all_individuals/batch_4.plink.for.admixture.4.Q \
+	--fam_file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.fam \
+	--K=4 \
+	--outfile=results/5_admixture/m10/all_individuals/plot_admixture_K4.pdf
+	
+# Make pngs for README:
+sips -s format png results/5_admixture/m3/all_individuals/plot_admixture_K2.pdf --out results/5_admixture/m3/all_individuals/plot_admixture_K2.png
+sips -s format png results/5_admixture/m6/all_individuals/plot_admixture_K2.pdf --out results/5_admixture/m6/all_individuals/plot_admixture_K2.png
+sips -s format png results/5_admixture/m10/all_individuals/plot_admixture_K4.pdf --out results/5_admixture/m10/all_individuals/plot_admixture_K4.png
+
+
+### Analysis 3: PCA
+
+# Use Plink to run PCA for all individuals: 
+
+# m3
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture --pca 59 --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.pca 
+
+# m6
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture --pca 59 --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca 
+	
+# m10
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture --pca 59 --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.pca 
+
+
+# Perform PCA, excluding Hainan population (the outgroup)
+
+# m3
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture --pca 54 --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.pca.no.hainan --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt
+
+# m6
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture --pca 54 --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca.no.hainan --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt
+
+# m10
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture --pca 54 --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.pca.no.hainan --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt
+
+
+# Plot first two principal components:
+mkdir -p results/6_PCA/m3/
+mkdir -p results/6_PCA/m6/
+mkdir -p results/6_PCA/m10/
+
+# m3
+scripts/plot_PCA.R \
+	--full_plink_in=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.pca \
+	--part_plink_in=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.pca.no.hainan \
+	--outpath=results/6_PCA/m3/	
+
+# m6
+scripts/plot_PCA.R \
+	--full_plink_in=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca \
+	--part_plink_in=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca.no.hainan \
+	--outpath=results/6_PCA/m6/
+
+# m10
+scripts/plot_PCA.R \
+	--full_plink_in=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.pca \
+	--part_plink_in=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.pca.no.hainan \
+	--outpath=results/6_PCA/m10/
+
+
+# Make pngs for README:
+sips -s format png results/6_PCA/m3/PCA.all.samples.121418ERD.pdf --out results/6_PCA/m3/PCA.all.samples.121418ERD.png
+sips -s format png results/6_PCA/m3/PCA.no.outgroup.121418ERD.pdf --out results/6_PCA/m3/PCA.no.outgroup.121418ERD.png
+sips -s format png results/6_PCA/m6/PCA.all.samples.121418ERD.pdf --out results/6_PCA/m6/PCA.all.samples.121418ERD.png
+sips -s format png results/6_PCA/m6/PCA.no.outgroup.121418ERD.pdf --out results/6_PCA/m6/PCA.no.outgroup.121418ERD.png
+sips -s format png results/6_PCA/m10/PCA.all.samples.121418ERD.pdf --out results/6_PCA/m10/PCA.all.samples.121418ERD.png
+sips -s format png results/6_PCA/m10/PCA.no.outgroup.121418ERD.pdf --out results/6_PCA/m10/PCA.no.outgroup.121418ERD.png
+
+# Run Admixture with the outgroup individuals removed:
+
+# First, use plink to exclude the Hainan individuals
+/programs/plink-1.9-x86_64-beta3.30/plink --file data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture_no_outgroup --make-bed
+/programs/plink-1.9-x86_64-beta3.30/plink --file data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture_no_outgroup --make-bed
+/programs/plink-1.9-x86_64-beta3.30/plink --file data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture_no_outgroup --make-bed
+
+# Second, eliminate SNPs with all missing genotypes from analysis
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture_no_outgroup --geno 0.95 --make-bed --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture_no_outgroup_genotype_filtered
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture_no_outgroup --geno 0.95 --make-bed --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture_no_outgroup_genotype_filtered
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture_no_outgroup --geno 0.95 --make-bed --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture_no_outgroup_genotype_filtered
+
+# Third, make output directories:
+
+mkdir -p results/5_admixture/m3/no_outgroup/
+mkdir -p results/5_admixture/m6/no_outgroup/
+mkdir -p results/5_admixture/m10/no_outgroup/
+
+# Fourth, run admixture. Admixture program will only save output to working directory, so create working directories for each iteration:
+
+# * `-j4` = use four processors 
+# * `-s` = set seed (1)
+# * `--cv` = do cross validation
+# * `-C` = set min delta to hit before declaring convergence (if float) or max iterations (int)
+# * `$K` = number of populations (K)
+
+# For m3:
+# Switch to the correct working directory and run admixture with the following parameters:
+cd results/5_admixture/m3/no_outgroup/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture_no_outgroup_genotype_filtered.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+
+# For m6:
+
+
+cd results/5_admixture/m6/no_outgroup/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture_no_outgroup_genotype_filtered.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+
+# m10 
+cd results/5_admixture/m10/no_outgroup/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture_no_outgroup_genotype_filtered.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
