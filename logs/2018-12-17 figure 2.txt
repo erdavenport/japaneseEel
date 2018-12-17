@@ -1,0 +1,34 @@
+# 2018-12-17
+
+# Continuing admixture analysis 
+for i in m3 m6 m10
+do
+scripts/plot_admixture_CVs.R \
+	--cv_file=results/5_admixture/$i/no_outgroup/admixture_cross_validations.txt  \
+	--outfile=results/5_admixture/$i/no_outgroup/plot_admixture_cross_validations_${i}.pdf
+done
+
+# Make pngs for README:
+sips -s format png results/5_admixture/m3/no_outgroup/plot_admixture_cross_validations_m3.pdf --out results/5_admixture/m3/no_outgroup/plot_admixture_cross_validations_m3.png
+sips -s format png results/5_admixture/m6/no_outgroup/plot_admixture_cross_validations_m6.pdf --out results/5_admixture/m6/no_outgroup/plot_admixture_cross_validations_m6.png
+sips -s format png results/5_admixture/m10/no_outgroup/plot_admixture_cross_validations_m10.pdf --out results/5_admixture/m10/no_outgroup/plot_admixture_cross_validations_m10.png
+
+
+# Working on Figure 2 - number of Loci per population:
+
+# Copy over last 13 lines sumstats files for each depth:
+
+tail -n 13 data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.sumstats_summary.tsv > results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv
+tail -n 13 data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.sumstats_summary.tsv > results/3_optimizing_depth/batch_3.sumstats_summary_tail.tsv
+tail -n 13 data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.sumstats_summary.tsv > results/3_optimizing_depth/batch_4.sumstats_summary_tail.tsv
+
+# Plot number of variant loci per population:
+scripts/plot_loci_per_population.R \
+	--m3=results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv \
+	--m6=results/3_optimizing_depth/batch_3.sumstats_summary_tail.tsv \
+	--m10=results/3_optimizing_depth/batch_4.sumstats_summary_tail.tsv \
+	--pop_info=data/sample_info/eelseq_sample_info_degrees_removed_corrected_with_names_coordinates_fixed.txt \
+	--outpath=results/3_optimizing_depth/
+	
+# Make png for README:
+sips -s format png results/3_optimizing_depth/barplot_variant_sites_per_pop_across_min_stack_depths.pdf --out results/3_optimizing_depth/barplot_variant_sites_per_pop_across_min_stack_depths.png
