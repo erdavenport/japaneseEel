@@ -868,6 +868,10 @@ Above, unrooted tree of individual genetic distances (m3 depth)
 
 Run admixture to discover population substructure/admixing. 
 
+
+### Admixture - all individuals 
+
+
 First, need to remove crazy eel contig names as chromosome or admixture won't like the file:
 
 ```
@@ -967,6 +971,17 @@ grep -h CV log*.out > admixture_cross_validations.txt
 cd ../../../..
 ```
 
+Plot optimal number of K for each depth:
+
+```
+for i in m3 m6 m10
+do
+scripts/plot_admixture_CVs.R \
+	--cv_file=results/5_admixture/$i/all_individuals/admixture_cross_validations.txt  \
+	--outfile=results/5_admixture/$i/all_individuals/plot_admixture_cross_validations_${i}.pdf
+done
+```
+
 Optimal number of K for m3:
 ![m3](results/5_admixture/m3/all_individuals/plot_admixture_cross_validations_m3.png)
 
@@ -1017,6 +1032,118 @@ scripts/plot_admixture_barchart.R \
 
 ![m10 K4 admixture plot](results/5_admixture/m10/all_individuals/plot_admixture_K4.png)
 
+### Admixture - no outgroup
+
+
+First, use plink to exclude the Hainan individuals
+
+```
+/programs/plink-1.9-x86_64-beta3.30/plink --file data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture_no_outgroup --make-bed
+/programs/plink-1.9-x86_64-beta3.30/plink --file data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture_no_outgroup --make-bed
+/programs/plink-1.9-x86_64-beta3.30/plink --file data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture_no_outgroup --make-bed
+```
+
+Second, eliminate SNPs with all missing genotypes from analysis
+
+```
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture_no_outgroup --geno 0.95 --make-bed --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture_no_outgroup_genotype_filtered
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture_no_outgroup --geno 0.95 --make-bed --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture_no_outgroup_genotype_filtered
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture_no_outgroup --geno 0.95 --make-bed --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture_no_outgroup_genotype_filtered
+```
+
+Third, make output directories:
+
+```
+mkdir -p results/5_admixture/m3/no_outgroup/
+mkdir -p results/5_admixture/m6/no_outgroup/
+mkdir -p results/5_admixture/m10/no_outgroup/
+```
+
+Fourth, run admixture. Admixture program will only save output to working directory, so create working directories for each iteration:
+
+* `-j4` = use four processors 
+* `-s` = set seed (1)
+* `--cv` = do cross validation
+* `-C` = set min delta to hit before declaring convergence (if float) or max iterations (int)
+* `$K` = number of populations (K)
+
+Switch to the correct working directory and run admixture with the following parameters:
+
+For m3:
+
+```
+cd results/5_admixture/m3/no_outgroup/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture_no_outgroup_genotype_filtered.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+```
+
+For m6:
+
+```
+cd results/5_admixture/m6/no_outgroup/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture_no_outgroup_genotype_filtered.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+```
+
+m10 
+
+```
+cd results/5_admixture/m10/no_outgroup/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture_no_outgroup_genotype_filtered.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+```
+
+Plot the cross validation rate for the different values of K:
+
+```
+for i in m3 m6 m10
+do
+scripts/plot_admixture_CVs.R \
+	--cv_file=results/5_admixture/$i/no_outgroup/admixture_cross_validations.txt  \
+	--outfile=results/5_admixture/$i/no_outgroup/plot_admixture_cross_validations_${i}.pdf
+done
+```
+
+Cross validation error rate for m3:
+
+![CV m3 no outgroup](results/5_admixture/m3/no_outgroup/plot_admixture_cross_validations_m3.png)
+
+Cross validation error rate for m6:
+
+![CV m6 no outgroup](results/5_admixture/m6/no_outgroup/plot_admixture_cross_validations_m6.png)
+
+Cross validation error rate for m10:
+![CV m10 no outgroup](results/5_admixture/m10/no_outgroup/plot_admixture_cross_validations_m10.png)
+
+For all stack depths (3, 6, and 10), the lowest cross-validation error rate is seen at K = 1, lending support for panmixia. 
+
 ## Run PCA
 
 Use Plink to run PCA for all individuals: 
@@ -1049,7 +1176,7 @@ m3:
 
 m6:
 
-``
+```
 /programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture --pca 54 --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca.no.hainan --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt
 ```
 
