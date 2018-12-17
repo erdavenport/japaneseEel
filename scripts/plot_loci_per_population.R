@@ -28,6 +28,7 @@ today <- format(today, format="%m%d%y")
 ##### Load libraries:
 suppressMessages(library("ggplot2"))
 
+source("scripts/common_functions_for_eelseq_analyses.R")
 
 
 ##### Load arguments:
@@ -68,7 +69,7 @@ var_data <- rbind(m3_data, m6_data, m10_data)
 pops$popyear <- paste0(pops$pop_name, " - ", pops$year)
 
 # Make population and popyear lookup table:
-popyeartab <- pops[, which(colnames(pops) %in% c("population", "popyear"))]
+popyeartab <- pops[, which(colnames(pops) %in% c("population", "popyear", "pop_name"))]
 pyt <- subset(popyeartab, !duplicated(popyeartab))
 
 # Add to var_data table:
@@ -88,6 +89,44 @@ plot1 <- ggplot(data = var_data, aes(x = popyear, y = Variant.Sites, fill = as.f
 	
 ggsave(paste0(outpath, "barplot_variant_sites_per_pop_across_min_stack_depths.pdf"), plot = plot1, width = 8, height = 6)
 
+
+
+##### Plot pi, Ho, and He
+# Add popyear to m3 table:
+m3_data$popyear <- pyt$popyear[match(m3_data$X..Pop.ID, pyt$population)]
+m3_data$pop_name <- pyt$pop_name[match(m3_data$X..Pop.ID, pyt$population)]
+
+# Reformat table for ggplot:
+Ho <- m3_data %>%
+	select(popyear, Obs.Het, pop_name)
+Ho$metric <- "Ho"
+colnames(Ho)[2] <- "value"
+
+He <- m3_data %>% 
+	select(popyear, Exp.Het, pop_name)
+He$metric <- "He"
+colnames(He)[2] <- "value"
+	
+Pi <- m3_data %>% 
+	select(popyear, Pi, pop_name)
+Pi$metric <- "Pi"
+colnames(Pi)[2] <- "value"
+
+div_data <- rbind(Ho, He, Pi)
+
+
+# THIS DOESN"T WORK YET
+ggplot(data = div_data, aes(x = metric, y = value, fill = popyear)) +
+	geom_bar(stat="identity", position = position_dodge()) +
+	xlab("") +
+	ylab("value of Ho, He, or pi") +
+	scale_color_manual("population", )
+	
+	
+	scale_fill_manual("populations", values = sapply(div_data$pop_name, pop.cols)) + 
+	theme_bw()
+	
+	scale_color_manual(values = sapply(levels(pop_name), pop.cols), labels = levels(pops$pop_name)
 
 
 print("DONE!")

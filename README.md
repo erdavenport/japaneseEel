@@ -23,6 +23,8 @@
   - [Create basic stats plots](#create-basic-stats-plots)
   - [Create phylogenetic trees from population level Fst](#create-phylogenetic-trees-from-population-level-fst)
   - [Run admixture](#run-admixture)
+    - [Admixture - all individuals](#admixture---all-individuals)
+    - [Admixture - no outgroup](#admixture---no-outgroup)
   - [Run PCA](#run-pca)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -770,6 +772,21 @@ scripts/make_map_for_eelseq_project.R
 ![map](results/1_general_info/map_sample_locations.png)
 
 ![timeline](results/1_general_info/timeline_sample_collection.png)
+
+Make plot of the number of loci per population at each stack depth:
+
+```
+scripts/plot_loci_per_population.R \
+	--m3=results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv \
+	--m6=results/3_optimizing_depth/batch_3.sumstats_summary_tail.tsv \
+	--m10=results/3_optimizing_depth/batch_4.sumstats_summary_tail.tsv \
+	--pop_info=data/sample_info/eelseq_sample_info_degrees_removed_corrected_with_names_coordinates_fixed.txt \
+	--outpath=results/3_optimizing_depth/
+```
+
+![loci per pop](results/3_optimizing_depth/barplot_variant_sites_per_pop_across_min_stack_depths.png)
+	
+	
 
 ## Create phylogenetic trees from population level Fst
 
