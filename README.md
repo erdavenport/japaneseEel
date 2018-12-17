@@ -950,9 +950,161 @@ grep -h CV log*.out > admixture_cross_validations.txt
 cd ../../../..
 ```
 
+m10: 
+
+```
+cd results/5_admixture/m10/all_individuals/
+
+for K in 1 2 3 4 6 8 10 
+do
+/programs/admixture_linux-1.23/admixture -j4 -s 1 -C 0.01 --cv ../../../../data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.bed $K | tee log${K}.out
+done
+
+#...Pull together a file of cross-validation errors
+grep -h CV log*.out > admixture_cross_validations.txt
+
+#...switch back to base directory
+cd ../../../..
+```
+
+Optimal number of K for m3:
+![m3](results/5_admixture/m3/all_individuals/plot_admixture_cross_validations_m3.png)
+
+Optimal number of K for m6:
+![m6](results/5_admixture/m6/all_individuals/plot_admixture_cross_validations_m6.png)
+
+Optimal number of K for m10:
+![m10](results/5_admixture/m10/all_individuals/plot_admixture_cross_validations_m10.png)
+
+The optimal number of populations for m3 and m6 is 2, which makes sense given the two species. 
+The optimal number of populations for m10 is 4 (although 5 was not tested). 
+
+Create admixture barplots for optimal K for each depth. 
+
+m3:
+
+```
+scripts/plot_admixture_barchart.R \
+	--Q_file=results/5_admixture/m3/all_individuals/batch_1.plink.for.admixture.2.Q \
+	--fam_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.fam \
+	--K=2 \
+	--outfile=results/5_admixture/m3/all_individuals/plot_admixture_K2.pdf
+```
+
+![m3 K2 admixture plot](results/5_admixture/m3/all_individuals/plot_admixture_K2.png)
+
+m6
+
+```
+scripts/plot_admixture_barchart.R \
+	--Q_file=results/5_admixture/m6/all_individuals/batch_3.plink.for.admixture.2.Q \
+	--fam_file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.fam \
+	--K=2 \
+	--outfile=results/5_admixture/m6/all_individuals/plot_admixture_K2.pdf
+```
+
+![m6 K2 admixture plot](results/5_admixture/m6/all_individuals/plot_admixture_K2.png)
+
+m10
+
+```
+scripts/plot_admixture_barchart.R \
+	--Q_file=results/5_admixture/m10/all_individuals/batch_4.plink.for.admixture.4.Q \
+	--fam_file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.fam \
+	--K=4 \
+	--outfile=results/5_admixture/m10/all_individuals/plot_admixture_K4.pdf
+```
+
+![m10 K4 admixture plot](results/5_admixture/m10/all_individuals/plot_admixture_K4.png)
+
 ## Run PCA
 
+Use Plink to run PCA for all individuals: 
 
+m3:
 
+```
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture --pca 59 --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.pca 
+```
+
+m6:
+
+```
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture --pca 59 --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca 
+```
+	
+m10:
+
+```
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture --pca 59 --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.pca 
+```
+
+Perform PCA, excluding Hainan population (the outgroup)
+
+m3:
+
+```
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture --pca 54 --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.pca.no.hainan --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt
+```
+
+m6:
+
+``
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture --pca 54 --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca.no.hainan --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt
+```
+
+m10:
+
+```
+/programs/plink-1.9-x86_64-beta3.30/plink --bfile data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture --pca 54 --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.pca.no.hainan --remove results/1_general_info/hainan_individuals_to_remove_in_plink.txt
+```
+
+Plot first two principal components:
+
+```
+mkdir -p results/6_PCA/m3/
+mkdir -p results/6_PCA/m6/
+mkdir -p results/6_PCA/m10/
+```
+
+m3:
+
+```
+scripts/plot_PCA.R \
+	--full_plink_in=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.pca \
+	--part_plink_in=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.for.admixture.pca.no.hainan \
+	--outpath=results/6_PCA/m3/	
+
+```
+
+![m3 PCA all samples](results/6_PCA/m3/PCA.all.samples.121418ERD.png)
+
+![m3 PCA no outgroup](results/6_PCA/m3/PCA.no.outgroup.121418ERD.png)
+
+m6:
+
+```
+scripts/plot_PCA.R \
+	--full_plink_in=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca \
+	--part_plink_in=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.for.admixture.pca.no.hainan \
+	--outpath=results/6_PCA/m6/
+```
+
+![m6 PCA all samples](results/6_PCA/m6/PCA.all.samples.121418ERD.png)
+
+![m6 PCA no outgroup](results/6_PCA/m6/PCA.no.outgroup.121418ERD.png)
+
+m10:
+
+```
+scripts/plot_PCA.R \
+	--full_plink_in=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.pca \
+	--part_plink_in=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.for.admixture.pca.no.hainan \
+	--outpath=results/6_PCA/m10/
+```
+
+![m10 PCA all samples](results/6_PCA/m10/PCA.all.samples.121418ERD.png)
+
+![m10 PCA no outgroup](results/6_PCA/m10/PCA.no.outgroup.121418ERD.png)
 
 
