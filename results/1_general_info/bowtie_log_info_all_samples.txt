@@ -1,0 +1,4 @@
+[1] "Total reads processed: 124662873"
+[1] "Total reads aligned: 67815299"
+[1] "Total reads failing alignment: 42280617"
+[1] "Total reads discarded: 14566957"
