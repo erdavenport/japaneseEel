@@ -773,7 +773,7 @@ scripts/make_map_for_eelseq_project.R
 
 ![timeline](results/1_general_info/timeline_sample_collection.png)
 
-Make plot of the number of loci per population at each stack depth:
+Make plot of the number of loci per population at each stack depth and plot of the nucleotide diversity in each population:
 
 ```
 scripts/plot_loci_per_population.R \
@@ -785,6 +785,26 @@ scripts/plot_loci_per_population.R \
 ```
 
 ![loci per pop](results/3_optimizing_depth/barplot_variant_sites_per_pop_across_min_stack_depths.png)
+
+![pi per pop](results/3_optimizing_depth/barplot_diversity_by_population_m3.png)
+
+Look at genetic distance versus geographic distance and temporal distance:
+
+```
+scripts/plot_Fst_over_time_and_space.R \
+	--sumstats_summary=results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.fst_summary.tsv \
+	--desc=m3 \
+	--outpath=results/3_optimizing_depth/ 
+```
+
+There is a relationship between genetic distance (Fst/(1 - Fst)) and geographic distance (lm p = 0.0397), but it is opposite of what we would expect to see: 
+
+![geographic vs genetic distance](results/3_optimizing_depth/m3_plot_geographic_distance_by_genetic_distance_no_out_group.png)
+
+There is not a relationship between genetic distance and temporal distance (lm p = 0.2519):
+
+![temporal vs. genetic distance](results/3_optimizing_depth/m3_plot_time_distance_by_genetic_distance_yangzte.png)
 	
 	
 
