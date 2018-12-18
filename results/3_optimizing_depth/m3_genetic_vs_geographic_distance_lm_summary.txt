@@ -1,0 +1,19 @@
+
+Call:
+lm(formula = myy ~ myx)
+
+Residuals:
+       Min         1Q     Median         3Q        Max 
+-0.0060899 -0.0026823 -0.0005812  0.0026718  0.0080706 
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  8.630e-02  7.495e-04 115.141   <2e-16 ***
+myx         -1.389e-06  6.586e-07  -2.109   0.0397 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.003598 on 53 degrees of freedom
+Multiple R-squared:  0.07741,	Adjusted R-squared:   0.06 
+F-statistic: 4.447 on 1 and 53 DF,  p-value: 0.0397
+
