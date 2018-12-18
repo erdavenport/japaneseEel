@@ -21,6 +21,7 @@
     - [Final data sets](#final-data-sets)
 - [Run analyses on final data set](#run-analyses-on-final-data-set)
   - [Create basic stats plots](#create-basic-stats-plots)
+  - [Pull data for Table 2](#pull-data-for-table-2)
   - [Create phylogenetic trees from population level Fst](#create-phylogenetic-trees-from-population-level-fst)
   - [Run admixture](#run-admixture)
     - [Admixture - all individuals](#admixture---all-individuals)
@@ -805,6 +806,55 @@ There is a relationship between genetic distance (Fst/(1 - Fst)) and geographic 
 There is not a relationship between genetic distance and temporal distance (lm p = 0.2519):
 
 ![temporal vs. genetic distance](results/3_optimizing_depth/m3_plot_time_distance_by_genetic_distance_yangzte.png)
+
+## Pull data for Table 2
+
+The first row of Table 2 comes from the log files from `process_radtags`.
+Here's information from each of the log files:
+
+From `/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/0_process_radtags_out_32_36_manli2/process_radtags.fastq_files_updated.log`:
+
+```
+File    Retained Reads  Low Quality     Ambiguous Barcodes      Ambiguous RAD-Tag       Total
+32_36_manli2_R1_merged.fastq.gz 55963714        253415  7841343 7186317 71244789
+
+Total Sequences 71244789
+Ambiguous Barcodes      7841343
+Low Quality     253415
+Ambiguous RAD-Tag       7186317
+Retained Reads  55963714
+```
+
+From `/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/0_process_radtags_out/process_radtags.fastq_files_updated.log`:
+
+```
+File    Retained Reads  Low Quality     Ambiguous Barcodes      Ambiguous RAD-Tag       Total
+32manli1_R1.fastq.gz    68699159        423170  9247278 10371910        88741517
+
+Total Sequences 88741517
+Ambiguous Barcodes      9247278
+Low Quality     423170
+Ambiguous RAD-Tag       10371910
+Retained Reads  68699159
+```
+
+Sum those up:
+Total Sequences = 
+Ambiguous Barcodes = 
+Low Quality = 
+Ambiguous RAD-Tag = 
+Retained Reads = 
+
+The second row of Table 2 comes from the Bowtie .log files. 
+Run this script to summarize the .log files:
+
+```
+scripts/analyze_bowtie_logs.R \
+	--inpath=/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/ \
+	--outpath=results/1_general_info/
+```
+
+
 	
 	
 
