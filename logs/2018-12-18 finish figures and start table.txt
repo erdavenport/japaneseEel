@@ -1,0 +1,47 @@
+# 2018-12-18
+
+# Rerun script that now includes nucleotide diversity plot information:
+scripts/plot_loci_per_population.R \
+	--m3=results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv \
+	--m6=results/3_optimizing_depth/batch_3.sumstats_summary_tail.tsv \
+	--m10=results/3_optimizing_depth/batch_4.sumstats_summary_tail.tsv \
+	--pop_info=data/sample_info/eelseq_sample_info_degrees_removed_corrected_with_names_coordinates_fixed.txt \
+	--outpath=results/3_optimizing_depth/
+	
+# Make pngs for README:
+sips -s format png results/3_optimizing_depth/barplot_variant_sites_per_pop_across_min_stack_depths.pdf --out results/3_optimizing_depth/barplot_variant_sites_per_pop_across_min_stack_depths.png
+sips -s format png results/3_optimizing_depth/barplot_diversity_by_population_m3.pdf --out results/3_optimizing_depth/barplot_diversity_by_population_m3.png
+
+# Run script to plot genetic distance vs. geographic and temporal distance:
+scripts/plot_Fst_over_time_and_space.R \
+	--sumstats_summary=results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.fst_summary.tsv \
+	--desc=m3 \
+	--outpath=results/3_optimizing_depth/ 
+
+# Make pngs for README:
+sips -s format png results/3_optimizing_depth/m3_plot_time_distance_by_genetic_distance_yangzte.pdf --out results/3_optimizing_depth/m3_plot_time_distance_by_genetic_distance_yangzte.png
+sips -s format png results/3_optimizing_depth/m3_plot_geographic_distance_by_genetic_distance_no_out_group.pdf --out results/3_optimizing_depth/m3_plot_geographic_distance_by_genetic_distance_no_out_group.png
+
+
+# Need the log file from process_radtags for 32_36_manli2, but it was overwritten by 32manli1
+# Process merged manli2 file:
+/programs/stacks-1.48/bin/process_radtags \
+	-f /fs/cbsufsrv5/data2/japaneseEel/data/fastq_files_updated/32_36_manli2_R1_merged.fastq.gz \
+	-i 'gzfastq' \
+	-o /fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/0_process_radtags_out_32_36_manli2/ \
+	-b data/sample_info/bcfile_manli2_for_stacks.txt \
+	-c \
+	-q \
+	-D \
+	-e 'kpnI' \
+	--inline_null
+	
+# Analyze bowtie logs to get bowtie information for table 2:
+scripts/analyze_bowtie_logs.R \
+	--inpath=/fs/cbsufsrv5/data2/japaneseEel/data/STACKS_processed/1_aligned_to_nuclear_genome_bowtie/ \
+	--outpath=results/1_general_info/
+	
+# 
+
+	
