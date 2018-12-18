@@ -27,6 +27,7 @@ today <- format(today, format="%m%d%y")
 
 ##### Load libraries:
 suppressMessages(library("ggplot2"))
+suppressMessages(library("dplyr"))
 
 source("scripts/common_functions_for_eelseq_analyses.R")
 
@@ -115,18 +116,23 @@ colnames(Pi)[2] <- "value"
 div_data <- rbind(Ho, He, Pi)
 
 
-# THIS DOESN"T WORK YET
-ggplot(data = div_data, aes(x = metric, y = value, fill = popyear)) +
+# Reorder population factors in data frame:
+div_data$popyear <- factor(div_data$popyear, levels = c("Yangtze River estuary - 2005", "Yangtze River estuary - 2006", "Yangtze River estuary - 2007", "Yangtze River estuary - 2008", "Yangtze River estuary - 2009", "Guangdong province - 2009", "Fujian province - 2009", "Zhejiang province - 2009", "Jiangsu province - 2009", "Chiba-ken - 2001", "Kagawa - 2001", "Hainan province - 2014"))
+
+# Set colors:
+div_data$color <- sapply(div_data$pop_name, pop.cols)
+coldata <- div_data %>% select(popyear, color)
+popColors <- subset(coldata, !duplicated(coldata))
+popCols <- popColors$color
+names(popCols) <- popColors$popyear
+
+plot2 <- ggplot(data = div_data, aes(x = metric, y = value, fill = popyear)) +
 	geom_bar(stat="identity", position = position_dodge()) +
 	xlab("") +
 	ylab("value of Ho, He, or pi") +
-	scale_color_manual("population", )
-	
-	
-	scale_fill_manual("populations", values = sapply(div_data$pop_name, pop.cols)) + 
+	scale_fill_manual("population", values = popCols) +
 	theme_bw()
 	
-	scale_color_manual(values = sapply(levels(pop_name), pop.cols), labels = levels(pops$pop_name)
-
+ggsave(paste0(outpath, "barplot_diversity_by_population_m3.pdf"), plot = plot2, width = 8, height = 4)
 
 print("DONE!")
