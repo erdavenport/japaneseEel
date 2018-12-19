@@ -33,10 +33,10 @@ plot.out <- opts$plot.out
 mydesc <- opts$desc
 
 
-# vcf.file <- "../data/STACKS_processed/7_depth_optimization/m10/rxstacks_corrected/batch_4.vcf"
-#white.list.out <- "../data/STACKS_processed/7_depth_optimization/m10/rxstacks_corrected/"
-#plot.out <- "../results/5_optimizing_depth/"
-#mydesc <- "m10"
+#vcf.file <- "data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf"
+#white.list.out <- "data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/"
+#plot.out <- "results/3_optimizing_depth/"
+#mydesc <- "m3"
 
 
 
@@ -98,6 +98,9 @@ dev.off()
 ##### Create a whitelist:
 whitelist.vcf <- vcf[-high.coverage.sites,]
 
-write.table(whitelist.vcf$ID, paste0(white.list.out, "whitelist_loci_after_coverage_filtering.txt"), sep="\n", row.names=FALSE, col.names=FALSE, quote=FALSE)
+# Find catalog ID from ID column:
+keepme <- sapply(whitelist.vcf$ID, function(x) {strsplit(x, split = "_")[[1]][1]})
+
+write.table(keepme, paste0(white.list.out, "whitelist_loci_after_coverage_filtering.txt"), sep="\n", row.names=FALSE, col.names=FALSE, quote=FALSE)
 
 print("DONE!")
