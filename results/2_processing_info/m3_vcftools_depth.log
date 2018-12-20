@@ -1,0 +1,13 @@
+
+VCFtools - 0.1.17
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--vcf data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.vcf
+	--depth
+	--out results/2_processing_info/m3_vcftools_depth
+
+After filtering, kept 59 out of 59 Individuals
+Outputting Mean Depth by Individual
+After filtering, kept 109505 out of a possible 109505 Sites
+Run Time = 3.00 seconds
