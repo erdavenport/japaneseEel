@@ -1,0 +1,45 @@
+item	value
+total loci called m3 pre-filtering	214210
+loci retained after filtering m3	106652
+average reads mapping to nuclear reference genome	1130254.98333333
+reads mapping to nuclear genome for JJ-107	11012
+average reads mapping to mito genome	854.883333333333
+total number of reads generated	159986306
+total number of retained reads	124662873
+What % of total seqed reads were retained	0.77920964685565
+Number of discarded reads	35323433
+% of total seqed reads discarded	0.22079035314435
+total number of reads mapped to nuclear genome	67815299
+percentage of retained reads mapped to nuclear genome	0.543989540494546
+number of reads failing alignment to nuclear genome	42280617
+% of retained reads that failed alignment to nuclear genome	0.339159655016133
+reads with ambiguous alignment	14566957
+% of retained reads with ambiguous alignment	0.116850804489321
+total percentage of raw reads discarded	0.576118102258077
+loci in catalog -m 3	106652
+loci in catalog -m 6	93788
+loci in catalog -m 10	75193
+SNPs in catalog -m 3 initially	805573
+SNPs in catalog -m 3 after corrections module	795991
+SNPs filtered out w/populations module	686486
+SNPs filtered in -m 3 due to coverage	2853
+minimum observed Heterozygosity	4e-04
+sd of minimum Ho	1e-04
+max Ho	7e-04
+sd of maximum Ho	3e-04
+mean Ho across pops	0.000563636363636364
+sd Ho across pops	8.0903983495589e-05
+population with max Ho	JDS
+population with min Ho	H
+minimum observed Heterozygosity	5e-04
+sd of minimum Ho	2e-04
+max He	8e-04
+sd of maximum He	3e-04
+mean He across pops	0.000709090909090909
+sd He across pops	0.000104446593573419
+minimum observed pi	6e-04
+sd of minimum pi	2e-04
+max pi	8e-04
+sd of maximum pi	3e-04
+mean pi across pops	0.000818181818181818
+sd pi across pops	0.000107871977994119
