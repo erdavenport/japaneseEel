@@ -653,15 +653,15 @@ scripts/filter_SNPs_and_create_whitelist_for_populations.R \
 
 Mean coverage before and after filtering (m3):
 
-![m3](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m3_121118ERD.pdf)
+![m3](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m3_121918ERD.png)
 
 m6:
 
-![m6](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m6_121118ERD.pdf)
+![m6](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m6_121918ERD.png)
 
 m10:
 
-![m10](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m10_121118ERD.pdf)
+![m10](results/3_optimizing_depth/hist_coverage_before_and_after_filtering_m10_121918ERD.png)
 
 Third, rerun `populations` using the whitelist to include only loci that are:
 
