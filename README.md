@@ -615,15 +615,15 @@ scripts/plot_variants_per_sample.R \
 
 For a depth of 3:
 
-![m3](results/3_optimizing_depth/m3_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.pdf)
+![m3](results/3_optimizing_depth/m3_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.png)
 
 For a depth of 6:
 
-![m6](results/3_optimizing_depth/m6_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.pdf)
+![m6](results/3_optimizing_depth/m6_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.png)
 
 For a depth of 10:
 
-![m10](results/3_optimizing_depth/m10_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.pdf)
+![m10](results/3_optimizing_depth/m10_barplot_SNPs_per_sample_in_vcf_before_coverage_filtering_121118ERD.png)
 
 Second, examine mean coverage per loci in each depth.
 Filter out any locus that is more than 2 x SD higher than the mean coverage:
