@@ -1,0 +1,174 @@
+# 2018-12-19
+
+# Get the number of loci in the catalog before and after filtering (wc -l minus one for the header):
+wc -l data/STACKS_processed/4_depth_optimization/m3/batch_1.catalog.tags.tsv
+# 214,210
+
+wc -l data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.catalog.tags.tsv
+# 213,610
+
+# Get depth information:
+/programs/vcftools_0.1.16/bin/vcftools --vcf data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.vcf --depth --out results/2_processing_info/m3_vcftools_depth
+/programs/vcftools_0.1.16/bin/vcftools --vcf data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.vcf --depth --out results/2_processing_info/m6_vcftools_depth
+/programs/vcftools_0.1.16/bin/vcftools --vcf data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.vcf --depth --out results/2_processing_info/m10_vcftools_depth
+
+
+
+
+#### UUUUUUGH forgot to include whitelist when rerunning populations. 
+# Delete the coverage_filtered folder for all depths:
+rm -fr data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered
+rm -fr data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered
+rm -fr data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered
+
+# Remake the folders:
+mkdir data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/
+mkdir data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/
+mkdir data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/
+
+# Remake whitelists:
+# m3
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/batch_1.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m3
+	
+# m6
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/batch_3.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m6
+	
+# m10
+scripts/filter_SNPs_and_create_whitelist_for_populations.R \
+	--vcf.file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/batch_4.vcf \
+	--white.list.out=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	--plot.out=results/3_optimizing_depth/ \
+	--desc=m10 
+	
+# Rerun populations:
+# Stack depth = 3:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-b 1 \
+	-O data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-W data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 3 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+	
+# Stack depth = 6:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-b 3 \
+	-O data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-W data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 6 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+	
+# Stack depth = 10:  
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-b 4 \
+	-O data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107.txt \
+	-W data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r .6 \
+	-m 10 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+
+# Copy over last 13 lines sumstats files for each depth:
+
+tail -n 13 data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.sumstats_summary.tsv > results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv
+tail -n 13 data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.sumstats_summary.tsv > results/3_optimizing_depth/batch_3.sumstats_summary_tail.tsv
+tail -n 13 data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.sumstats_summary.tsv > results/3_optimizing_depth/batch_4.sumstats_summary_tail.tsv
+
+# Make plot of the number of loci per population at each stack depth and plot of the nucleotide diversity in each population:
+scripts/plot_loci_per_population.R \
+	--m3=results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv \
+	--m6=results/3_optimizing_depth/batch_3.sumstats_summary_tail.tsv \
+	--m10=results/3_optimizing_depth/batch_4.sumstats_summary_tail.tsv \
+	--pop_info=data/sample_info/eelseq_sample_info_degrees_removed_corrected_with_names_coordinates_fixed.txt \
+	--outpath=results/3_optimizing_depth/
+
+# Look at genetic distance versus geographic distance and temporal distance:
+
+scripts/plot_Fst_over_time_and_space.R \
+	--sumstats_summary=results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.fst_summary.tsv \
+	--desc=m3 \
+	--outpath=results/3_optimizing_depth/ 
+	
+	
+#First, recode plink files to be in dosage format:
+
+# m3:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink
+
+# m6:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink
+
+# m10:
+/programs/plink-1.07-x86_64/plink --file data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink --recodeA --noweb --out data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink
+
+# Remove old directories:
+rm -rf results/4_Fst/*
+
+# Make directories to store analysis output:
+
+mkdir -p results/4_Fst/m3/
+mkdir -p results/4_Fst/m6/
+mkdir -p results/4_Fst/m10/
+
+
+# Next, calculate the genetic distance between all pairs of individuals:
+
+# m3
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m3/
+
+# m6	
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/batch_3.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m6/
+
+# m10	
+scripts/create_individual_distance_matrix.R \
+	--raw_file=data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/batch_4.plink.raw \
+	--cores=12 \
+	--outpath=results/4_Fst/m10/
