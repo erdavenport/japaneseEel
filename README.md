@@ -27,6 +27,7 @@
     - [Admixture - all individuals](#admixture---all-individuals)
     - [Admixture - no outgroup](#admixture---no-outgroup)
   - [Run PCA](#run-pca)
+  - [Calculate stats for manuscript](#calculate-stats-for-manuscript)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -1342,5 +1343,14 @@ scripts/plot_PCA.R \
 ![m10 PCA all samples](results/6_PCA/m10/PCA.all.samples.122018ERD.png)
 
 ![m10 PCA no outgroup](results/6_PCA/m10/PCA.no.outgroup.122018ERD.png)
+
+## Calculate stats for manuscript
+
+```
+scripts/stats_in_paper.R
+```
+
+This produces a text table at `results/1_general_info/stats_for_paper.txt` that lists all of the statistics reported in the manuscript. 
+The script currently isn't done. 
 
 
