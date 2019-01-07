@@ -4,7 +4,7 @@
 suppressMessages(library("docopt"))
 "
 Usage:
-	ANOVAs_sumstats.R --sumstats_file=<sumstats_file> --outpath=<outpath>
+	ANOVA_script.R --sumstats_file=<sumstats_file> --outpath=<outpath>
 	
 Description: This script will run ANOVAs for the eel paper. 
 
