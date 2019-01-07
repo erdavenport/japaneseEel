@@ -1,0 +1,2 @@
+temporal_p	0.211
+geographic_p	0.315
