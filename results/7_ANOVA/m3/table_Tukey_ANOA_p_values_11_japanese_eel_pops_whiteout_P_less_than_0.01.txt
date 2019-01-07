@@ -1,0 +1,56 @@
+He Ho Fis Pi Private
+Fujiang09-Chibaken01   0.982648162090175  
+Guangdong09-Chibaken01 0.994173696643645 0.999999960722149 0.983357198524376 0.993776550293684 0.999882790951177
+Jiangsu09-Chibaken01  0.118501710693727   
+Kagawa01-Chibaken01     
+Yangtze05-Chibaken01     
+Yangtze06-Chibaken01  0.999999999240231  0.109947262811953 
+Yangtze07-Chibaken01  0.574834028220092 0.0111676697994288  0.0259211189475206
+Yangtze08-Chibaken01   0.133155415653507  
+Yangtze09-Chibaken01     
+Zhejiang09-Chibaken01     
+Guangdong09-Fujiang09   0.392470439168824  
+Jiangsu09-Fujiang09     
+Kagawa01-Fujiang09     
+Yangtze05-Fujiang09  0.182713831364248   
+Yangtze06-Fujiang09     
+Yangtze07-Fujiang09     
+Yangtze08-Fujiang09   0.890196538947081  
+Yangtze09-Fujiang09     
+Zhejiang09-Fujiang09     
+Jiangsu09-Guangdong09  0.236729088057226 0.120624279826322  
+Kagawa01-Guangdong09     
+Yangtze05-Guangdong09     
+Yangtze06-Guangdong09  0.999999999999765   
+Yangtze07-Guangdong09 0.0479347933852626 0.772741171267138 0.325338894301041 0.0735860006423492 
+Yangtze08-Guangdong09     
+Yangtze09-Guangdong09     
+Zhejiang09-Guangdong09   0.0641297583209193  
+Kagawa01-Jiangsu09     
+Yangtze05-Jiangsu09     
+Yangtze06-Jiangsu09  0.205435698287102   
+Yangtze07-Jiangsu09 0.988126459134527 0.999282073319759 0.999997457230239 0.995852920029944 0.999302791348861
+Yangtze08-Jiangsu09 0.0510499622725075    1
+Yangtze09-Jiangsu09     
+Zhejiang09-Jiangsu09 0.936744483354406 0.892939869278816 0.999999996720759 0.97311529967443 0.949698795693843
+Yangtze05-Kagawa01     
+Yangtze06-Kagawa01     
+Yangtze07-Kagawa01     
+Yangtze08-Kagawa01     
+Yangtze09-Kagawa01     
+Zhejiang09-Kagawa01     
+Yangtze06-Yangtze05   0.999893588037315  
+Yangtze07-Yangtze05     
+Yangtze08-Yangtze05   0.0123981905288811  
+Yangtze09-Yangtze05 0.298910658549709   0.141099183049653 0.0477529406799638
+Zhejiang09-Yangtze05     
+Yangtze07-Yangtze06  0.726749768862774   
+Yangtze08-Yangtze06   0.0761375487446265  
+Yangtze09-Yangtze06     
+Zhejiang09-Yangtze06     
+Yangtze08-Yangtze07     0.999553102170721
+Yangtze09-Yangtze07     
+Zhejiang09-Yangtze07 0.254742847656735 0.374382727603094 0.999878052697598 0.451542909608799 0.500388172073236
+Yangtze09-Yangtze08     
+Zhejiang09-Yangtze08 0.796639644755358   0.0128241120323774 0.939501632836144
+Zhejiang09-Yangtze09     
