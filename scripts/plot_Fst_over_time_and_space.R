@@ -30,6 +30,8 @@ library("reshape2")
 library("ggplot2")
 suppressMessages(library("geosphere"))
 library("testit")
+library("ade4")
+library("ape")
 
 
 
@@ -156,6 +158,69 @@ pdf(paste0(outpath, mydesc, "_plot_time_distance_by_genetic_distance_yangzte.pdf
 plot(yangtzemf$time, yangtzemf$gendist, ylab="Fst/(1 - Fst)", xlab="temporal distance (years)", pch=16, col="gray40")
 abline(mlm2, col="red")
 hi <- dev.off()
+
+
+
+##### Mantel tests
+
+### For just the Yangtze temporal samples, see if there's a relationship:
+
+# Make wide matricies for geographic and time distance:
+gendist <- acast(yangtzemf, Var1 ~ Var2, value.var = "gendist")
+tiiiime <- acast(yangtzemf, Var1 ~ Var2, value.var = "time")
+
+# Make square with all values:
+gendist2 <- cbind(NA, gendist)
+colnames(gendist2)[1] <- "CXD"
+tiiiime2 <- cbind(NA, tiiiime)
+colnames(tiiiime2)[1] <- "CXD"
+
+gendist3 <- rbind(gendist2, NA)
+rownames(gendist3)[5] <- "LCG09"
+tiiiime3 <- rbind(tiiiime2, NA)
+rownames(tiiiime3)[5] <- "LCG09"
+
+# Fill in diagonals:
+diag(gendist3) <- 0
+diag(tiiiime3) <- 0
+
+# Fill in bottom tri:
+gendist3[lower.tri(gendist3)] <- t(gendist3)[lower.tri(gendist3)]
+tiiiime3[lower.tri(tiiiime3)] <- t(tiiiime3)[lower.tri(tiiiime3)]
+
+y_mantel <- mantel.test(gendist3, tiiiime3, graph = FALSE)
+
+yangze_temporal_samples_p <- y_mantel$p
+
+### Genetic vs. Geographic distances
+# Keep only the Yangze River 2009 and remove the outgroup:
+rmme <- c("CXD", "DH", "LCG07", "JDS", "HM")
+
+fstp <- fst[-which(colnames(fst) %in% rmme), -which(rownames(fst) %in% rmme)]
+distsp <- dists[-which(colnames(dists) %in% rmme), -which(rownames(fst) %in% rmme)]
+
+# Make fstp genetic distance:
+genp <- fstp/(1 - fstp)
+
+# Add bottom row:
+genp <- rbind(genp, NA)
+distsp <- rbind(distsp, NA)
+
+# Fill in diagonals:
+diag(genp) <- 0
+diag(distsp) <- 0
+
+# Fill in bottom of triangle:
+genp[lower.tri(genp)] <- t(genp)[lower.tri(genp)]
+distsp[lower.tri(distsp)] <- t(distsp)[lower.tri(distsp)]
+
+g_mantel <- mantel.test(genp, distsp, graph = FALSE)
+
+geographic_samples_p <- g_mantel$p
+
+mantelps <- cbind(c("temporal_p", "geographic_p"), c(yangze_temporal_samples_p, geographic_samples_p))
+
+write.table(mantelps, paste0(outpath, "table_mantel_test_p_values.txt"), sep = "\t", quote = FALSE, row.names = FALSE, col.names = FALSE)
 
 
 
