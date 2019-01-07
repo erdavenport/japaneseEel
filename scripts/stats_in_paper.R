@@ -203,4 +203,8 @@ stuff <- rbind(stuff, c("mean pi across pops", mean(m3_data$Pi)))
 # SD of mean Pis:
 stuff <- rbind(stuff, c("sd pi across pops", sd(m3_data$Pi)))
 
+
+# Mantel test P for Yangtze River over time:
+mantelp <- read.table("results/3_opimizing_depth/table_mantel_test_p_values.txt", sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+
 write.table(stuff, "results/1_general_info/stats_for_paper.txt", sep = "\t", row.names = FALSE, quote = FALSE)
