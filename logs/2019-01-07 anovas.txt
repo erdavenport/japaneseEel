@@ -1,0 +1,17 @@
+# 2019-01-07
+
+# Run ANOVAs:
+
+mkdir results/7_ANOVA/m3
+
+# ANOVA script:
+scripts/ANOVA_script.R \
+	--sumstats_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.sumstats.tsv \
+	--outpath=results/7_ANOVA/m3/
+
+# Add mantel tests to plot Fst over time and space script
+scripts/plot_Fst_over_time_and_space.R \
+	--sumstats_summary=results/3_optimizing_depth/batch_1.sumstats_summary_tail.tsv \
+	--fst_summary=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.fst_summary.tsv \
+	--desc=m3 \
+	--outpath=results/3_optimizing_depth/ 
