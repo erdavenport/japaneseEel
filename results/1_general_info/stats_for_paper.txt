@@ -45,3 +45,4 @@ mean pi across pops	0.000818181818181818
 sd pi across pops	0.000107871977994119
 Mantel test P-value for Yangtze River over time	0.211
 Mantel test P-value for spatial samples	0.315
+Mean depth of retained loci m3	7.75579668901661
