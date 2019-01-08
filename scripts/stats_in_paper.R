@@ -205,6 +205,13 @@ stuff <- rbind(stuff, c("sd pi across pops", sd(m3_data$Pi)))
 
 
 # Mantel test P for Yangtze River over time:
-mantelp <- read.table("results/3_opimizing_depth/table_mantel_test_p_values.txt", sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+mantelp <- read.table("results/3_optimizing_depth/table_mantel_test_p_values.txt", sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+stuff <- rbind(stuff, c("Mantel test P-value for Yangtze River over time", mantelp[1,2]))
+stuff <- rbind(stuff, c("Mantel test P-value for spatial samples", mantelp[2,2]))
 
+
+
+##### Write out table of stats:
 write.table(stuff, "results/1_general_info/stats_for_paper.txt", sep = "\t", row.names = FALSE, quote = FALSE)
+
+print("DONE!")
