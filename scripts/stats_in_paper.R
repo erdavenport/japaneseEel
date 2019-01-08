@@ -203,11 +203,15 @@ stuff <- rbind(stuff, c("mean pi across pops", mean(m3_data$Pi)))
 # SD of mean Pis:
 stuff <- rbind(stuff, c("sd pi across pops", sd(m3_data$Pi)))
 
-
 # Mantel test P for Yangtze River over time:
 mantelp <- read.table("results/3_optimizing_depth/table_mantel_test_p_values.txt", sep = "\t", header = FALSE, stringsAsFactors = FALSE)
 stuff <- rbind(stuff, c("Mantel test P-value for Yangtze River over time", mantelp[1,2]))
 stuff <- rbind(stuff, c("Mantel test P-value for spatial samples", mantelp[2,2]))
+
+# Mean depth of retained loci:
+mdepth <- read.table(file = "data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1_vcf.ldepth.mean", sep = "\t", header = TRUE)
+mmdepth <- mean(mdepth$MEAN_DEPTH)
+stuff <- rbind(stuff, c("Mean depth of retained loci m3", mmdepth))
 
 
 
