@@ -1,0 +1,13 @@
+# 2019-01-08
+
+# Updating stats in paper file:
+scripts/stats_in_paper.R
+
+# Get information about depth using vcf tools of the final coverage filtered catalog:
+
+# Depth per individual:
+/programs/vcftools-v0.1.14/bin/vcftools --vcf data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.vcf --depth --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1_vcf 
+
+# Mean depth per site averaged across individuals:
+/programs/vcftools-v0.1.14/bin/vcftools --vcf data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.vcf --site-mean-depth --out data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1_vcf 
+
