@@ -46,3 +46,7 @@ sd pi across pops	0.000107871977994119
 Mantel test P-value for Yangtze River over time	0.211
 Mantel test P-value for spatial samples	0.315
 Mean depth of retained loci m3	7.75579668901661
+Meta populations with min Fst	East_China_Sea - Pacific_Ocean
+Meta populations min Fst	0.0153459
+Meta populations with max Fst	South_China_Sea - Yellow_Sea
+Meta populations max Fst	0.0764927
