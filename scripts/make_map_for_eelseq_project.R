@@ -141,10 +141,27 @@ trash <- dev.off()
 
 
 ##### USE THIS BASE FOR STAMENMAPS (with color)
+#base.map=ggmap(base)
+#map.plot <- base.map + 
+#	geom_point(data=pops, aes(x=longitude, y= latitude), color="white", shape=myShapes, size=5) +
+#	geom_point(data=pops, aes(x=longitude, y=latitude, color=pop_name), shape = myShapes, size=4) + 
+#	scale_shape_manual(values = sapply(levels(pops$pop_name), pop.shapes), labels = levels(pops$pop_name), name = "population") +
+#	scale_color_manual(values = sapply(levels(pops$pop_name), pop.cols), labels = levels(pops$pop_name), name = "population") +
+#	labs(x="Longitude", y="Latitude", title="Collection sites") +
+#	theme_bw() + 
+#	theme(	axis.text = element_text(size = 12), 
+#			axis.title = element_text(size = 16),
+#			plot.title = element_text(size = 20, face = "bold"),
+#			legend.key = element_rect(color = "white")) +
+#	# USE THIS SCALE BAR FOR STAMEN MAP:
+#	scalebar(data=pops, location="bottomright", dist=500, height=0.05, dd2km=TRUE, st.dist=0.1, st.size=2, model="WGS84", y.min=15, y.max=38, x.min=100, x.max=150)
+
+
+
 base.map=ggmap(base)
 map.plot <- base.map + 
-	geom_point(data=pops, aes(x=longitude, y= latitude), color="white", shape=myShapes, size=5) +
-	geom_point(data=pops, aes(x=longitude, y=latitude, color=pop_name), shape = myShapes, size=4) + 
+	geom_point(data=pops, aes(x=longitude, y= latitude), color="white", shape = 16, size=5) +
+	geom_point(data=pops, aes(x=longitude, y=latitude, color=pop_name), shape = 16, size=4) + 
 	scale_color_manual(values = sapply(levels(pops$pop_name), pop.cols), labels = levels(pops$pop_name), name = "population") +
 	labs(x="Longitude", y="Latitude", title="Collection sites") +
 	theme_bw() + 
@@ -163,7 +180,7 @@ y <- c(1,1,1,1,1,2,3,4,5,1,2,1)
 
 pdf("results/1_general_info/timeline_sample_collection.pdf", width=8, height=2.8)
 par(mar=c(5,2,3,2))
-plot(reps$year, y, pch=sapply(reps$pop_name, pop.shapes), col=sapply(reps$pop_name, pop.cols), cex=2, ylim=c(0,6), main="Collection year", xlab="Year", yaxt="n", bty="n", xlim=c(2000, 2014), ylab="", cex.main=2, cex.axis=1.5, cex.lab=2)
+plot(reps$year, y, pch=16, col=sapply(reps$pop_name, pop.cols), cex=2, ylim=c(0,6), main="Collection year", xlab="Year", yaxt="n", bty="n", xlim=c(2000, 2014), ylab="", cex.main=2, cex.axis=1.5, cex.lab=2)
 trash <- dev.off()
 
 print("DONE!")
