@@ -52,12 +52,44 @@ popfile <- sample_info %>%
 # Generate population file with no JJ-107 (low sequencing depth):
 popfile_noJJ107 <- popfile[-which(popfile$sample_ID == "JJ-107"), ]
 
+# Generate population file divided into four groups: South China Se, East China Sea, Yellow Sea, and Pacific Ocean
+SCS <- c("XH")
+ECS <- c("FQ", "CX", "CXD", "DH", "LCG07", "JDS", "LCG09")
+YS <- c("DF")
+PO <- c("Q", "H")
+
+# Function to reassign population labels to the four groups
+reassign_pop <- function(pID) {
+	if (pID %in% SCS) {
+		return("South_China_Sea")
+	} else if (pID %in% ECS) {
+		return("East_China_Sea")
+	} else if (pID %in% YS) {
+		return("Yellow_Sea")
+	} else if (pID %in% PO) {
+		return("Pacific_Ocean")
+	} else {
+		return(NA)
+	}
+}
+
+# Use function to assign new population name:
+newpop <- sapply(popfile_noJJ107$population, reassign_pop)
+
+# Create a map file for STACKS with the four populations. 
+popfile_noJJ107_4pops <- popfile_noJJ107
+popfile_noJJ107_4pops$population <- newpop
+
+# Remove the outgroup samples:
+popfile_noJJ107_4pops <- popfile_noJJ107_4pops[-which(is.na(popfile_noJJ107_4pops$population)), ]
+
 
 
 ##### Save population file and corrected sample info:
 write.table(sample_info, "data/sample_info/eelseq_sample_info_degrees_removed_corrected.txt", sep="\t", row.names=FALSE, quote=FALSE)
 write.table(popfile, "data/sample_info/population_file_for_stacks.txt", sep="\t", row.names=FALSE, col.names=FALSE, quote=FALSE)
 write.table(popfile_noJJ107, "data/sample_info/population_file_for_stacks_no_JJ-107.txt", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(popfile_noJJ107_4pops, "data/sample_info/population_file_for_stacks_no_JJ-107_four_meta_populations.txt", sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
 
 
 
