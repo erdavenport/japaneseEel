@@ -213,6 +213,21 @@ mdepth <- read.table(file = "data/STACKS_processed/4_depth_optimization/m3/rxsta
 mmdepth <- mean(mdepth$MEAN_DEPTH)
 stuff <- rbind(stuff, c("Mean depth of retained loci m3", mmdepth))
 
+# Fst in metapopulations:
+metafst <- read.table(file = "data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/four_meta_populations/batch_1.fst_summary.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+rownames(metafst) <- metafst$X
+metafst <- metafst[ ,-1]
+minfstID <- which(metafst == min(metafst, na.rm = TRUE), arr.ind = TRUE)
+maxfstID <- which(metafst == max(metafst, na.rm = TRUE), arr.ind = TRUE)
+minfstIDpops <- paste0(rownames(metafst)[minfstID[1]], " - ", colnames(metafst)[minfstID[2]])
+maxfstIDpops <- paste0(rownames(metafst)[maxfstID[1]], " - ", colnames(metafst)[maxfstID[2]])
+minfst <- metafst[minfstID]
+maxfst <- metafst[maxfstID]
+stuff <- rbind(stuff, c("Meta populations with min Fst", minfstIDpops))
+stuff <- rbind(stuff, c("Meta populations min Fst", minfst))
+stuff <- rbind(stuff, c("Meta populations with max Fst", maxfstIDpops))
+stuff <- rbind(stuff, c("Meta populations max Fst", maxfst))
+
 
 
 ##### Write out table of stats:
