@@ -228,6 +228,37 @@ stuff <- rbind(stuff, c("Meta populations min Fst", minfst))
 stuff <- rbind(stuff, c("Meta populations with max Fst", maxfstIDpops))
 stuff <- rbind(stuff, c("Meta populations max Fst", maxfst))
 
+# Fsts for Supplemental Table 2:
+fst <- read.table(file = "data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.fst_summary.tsv", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+rownames(fst) <- fst$X
+fst <- fst[ , -1]
+
+pops <- read.table(file = "data/sample_info/popcodes.txt", sep = "\t", header = FALSE, stringsAsFactors = FALSE)
+
+colnames(fst) <- pops$V2[match(colnames(fst), pops$V1)]
+rownames(fst) <- pops$V2[match(rownames(fst), pops$V1)]
+fst1 <- fst
+fst1[is.na(fst1)] <- ""
+
+write.table(fst1, "results/4_Fst/m3/fst_for_supplementary_table_2.txt", sep = "\t", quote = FALSE)
+
+# Fsts different location same year:
+fst09 <- fst[grepl("09", rownames(fst)), grepl("09", colnames(fst))]
+meanfst09 <- mean(as.matrix(fst09), na.rm = TRUE)
+stuff <- rbind(stuff, c("average Fst over all locations in 2009", meanfst09))
+
+# Fsts same location different year:
+fsty <- fst[grepl("Yang", rownames(fst)), grepl("Yang", colnames(fst))]
+yangfst <- mean(as.matrix(fsty), na.rm = TRUE)
+stuff <- rbind(stuff, c("average Fst over Yangtze populations in different years", yangfst))
+
+# Overall mean Fst:
+meanfst <- mean(as.matrix(fst[ , -which(colnames(fst) %in% c("Hainan14"))]), na.rm = TRUE)
+stuff <- rbind(stuff, c("overall mean Fst", meanfst))
+
+
+
+
 
 
 ##### Write out table of stats:
