@@ -18,6 +18,7 @@
   - [Step 3: Reassemble the catalog after running corrections module](#step-3-reassemble-the-catalog-after-running-corrections-module)
   - [Step 4: Run populations module on catalog to calculate stats](#step-4-run-populations-module-on-catalog-to-calculate-stats)
   - [Step 5: Filter out samples with low calls and loci with high depth, rerun populations](#step-5-filter-out-samples-with-low-calls-and-loci-with-high-depth-rerun-populations)
+  - [Step 6: Run populations module on "meta-populations"](#step-6-run-populations-module-on-meta-populations)
     - [Final data sets](#final-data-sets)
 - [Run analyses on final data set](#run-analyses-on-final-data-set)
   - [Create basic stats plots](#create-basic-stats-plots)
@@ -27,6 +28,7 @@
     - [Admixture - all individuals](#admixture---all-individuals)
     - [Admixture - no outgroup](#admixture---no-outgroup)
   - [Run PCA](#run-pca)
+  - [Calculate significant differences in diversity statistics using ANOVA](#calculate-significant-differences-in-diversity-statistics-using-anova)
   - [Calculate stats for manuscript](#calculate-stats-for-manuscript)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -741,6 +743,98 @@ Rerun populations:
 	--verbose
 ```
 
+## Step 6: Run populations module on "meta-populations"
+
+One concern is that 5 individuals per population might be on the low side. 
+To address this, samples were divided into four metapopulations, and statistics on those metapopulations calculated using populations. 
+
+The four metapopulations are as follows:
+
+1. “South China Sea” includes Guangdong2009/09
+2. “East China Sea” includes Fujian2009/09, Yangtze2005/05, Yangtze2006/06, Yangtze2007/07, Yangtze2008/08, Yangzte2009/09
+3. “Yellow Sea” includes Jiangsu2009/09
+4. “Pacific Ocean” includes Chibaken2001/01 and Kagawa2001/01)
+
+First, make output directories for results:
+
+```
+# Make output directories:
+mkdir data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/four_meta_populations/
+mkdir data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/four_meta_populations/
+mkdir data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/four_meta_populations/
+```
+
+Next, run populations for each stack depth:
+
+Stack depth = 3:  
+
+```
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-b 1 \
+	-O data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/four_meta_populations/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107_four_meta_populations.txt \
+	-W data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r 0.6 \
+	-m 3 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+```
+
+Stack depth = 6:  
+
+```
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-b 3 \
+	-O data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/four_meta_populations/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107_four_meta_populations.txt \
+	-W data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r 0.6 \
+	-m 6 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+```
+
+Stack depth = 10:  
+
+```
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-b 4 \
+	-O data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/four_meta_populations/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107_four_meta_populations.txt \
+	-W data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r 0.6 \
+	-m 10 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+```
+
 ### Final data sets
 
 The final datasets for each read depth are in the following directories on `cbsulm06`:
@@ -800,7 +894,8 @@ scripts/plot_loci_per_population.R \
 
 ![pi per pop](results/3_optimizing_depth/barplot_diversity_by_population_m3.png)
 
-Look at genetic distance versus geographic distance and temporal distance:
+Look at genetic distance versus geographic distance and temporal distance.
+This script uses a Mantel test to assess significance:
 
 ```
 scripts/plot_Fst_over_time_and_space.R \
@@ -1344,13 +1439,23 @@ scripts/plot_PCA.R \
 
 ![m10 PCA no outgroup](results/6_PCA/m10/PCA.no.outgroup.122018ERD.png)
 
+## Calculate significant differences in diversity statistics using ANOVA
+
+The following script uses an ANOVA followed by TukeyHSD to identify significant differences between each pair of populations in the study: 
+
+```
+scripts/ANOVA_script.R \
+	--sumstats_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.sumstats.tsv \
+	--outpath=results/7_ANOVA/m3/
+```
+
 ## Calculate stats for manuscript
 
 ```
 scripts/stats_in_paper.R
 ```
 
-This produces a text table at `results/1_general_info/stats_for_paper.txt` that lists all of the statistics reported in the manuscript. 
-The script currently isn't done. 
+This produces a text table at `results/1_general_info/stats_for_paper.txt` that lists all of the statistics reported in the text of the manuscript. 
+ 
 
 
