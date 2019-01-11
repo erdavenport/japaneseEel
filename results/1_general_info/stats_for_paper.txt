@@ -50,3 +50,6 @@ Meta populations with min Fst	East_China_Sea - Pacific_Ocean
 Meta populations min Fst	0.0153459
 Meta populations with max Fst	South_China_Sea - Yellow_Sea
 Meta populations max Fst	0.0764927
+average Fst over all locations in 2009	0.07704954
+average Fst over Yangtze populations in different years	0.08196477
+overall mean Fst	0.0791507363636364
