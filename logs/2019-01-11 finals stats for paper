@@ -1,0 +1,16 @@
+# 2019-01-11
+
+# Copy vcf file to home directory:
+cp data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.vcf ~
+
+# Zip file:
+cd
+gzip batch_1.vcf
+
+# Transfer file to desktop so that it can be uploaded to Dryad
+scp ed379@cbsulogin.tc.cornell.edu:~/batch_1.vcf.gz ~/Desktop/
+
+# Calculate the necessary Fst values and base for Supplemental Table 2:
+scripts/stats_in_paper.R 
+
+
