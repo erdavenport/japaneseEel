@@ -1,0 +1,52 @@
+# eelsim.r   10 Jan 2019
+# Simulates 2 populations, sampled by RAD-seq with different sample size, read counts and number of loci.
+# Does binomial sampling of alleles.  Number of loci = (100, 1000, 10000) and number of reads*smaple = (40, 80, 120).
+# Tallies MSE over 100 reps for estimate of Fst, where mean is close to eel observed.
+
+xnloc<-c(100,1000,10000)
+xsize<-c(40,80,120)
+mfst<-rep(0,100)
+mgst<-rep(0,100)
+
+for (nloc in xnloc)
+{
+  for (size in xsize) 
+  {
+     for (irep in 1:100)
+     {
+
+# first the TRUE allele frequencies in the two populations, and their Fst
+p1<-runif(nloc,.01,.4)
+delta<-runif(nloc,0.001,.2)
+p2<-p1+delta
+pbar<-(p1+p2)/2
+ht<-2*pbar*(1-pbar)
+hs<-p1*(1-p1)+p2*(1-p2)
+fst<-(ht-hs)/ht
+
+# then we sample from them, and calculate observed Fst, which we call Gst
+s1<-(1+rbinom(nloc,size,p1))/size
+s2<-(1+rbinom(nloc,size,p2))/size
+sbar<-(s1+s2)/2
+ht<-2*sbar*(1-sbar)
+hs<-s1*(1-s1)+s2*(1-s2)
+gst<-(ht-hs)/ht
+
+# each rep, store mean fst and mean gst
+
+mfst[irep]<-mean(fst)
+mgst[irep]<-mean(gst)
+
+} # end irep
+
+# calc MSE from vectors of mean(fst) and mean(gst) (over reps). and print it
+
+ppp<-c(size, nloc, sum((mfst-mgst)^2)/nloc)
+print(ppp)
+
+
+} # end size
+
+} # end nloc
+
+ 
