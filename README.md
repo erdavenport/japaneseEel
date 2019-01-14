@@ -29,6 +29,7 @@
     - [Admixture - no outgroup](#admixture---no-outgroup)
   - [Run PCA](#run-pca)
   - [Calculate significant differences in diversity statistics using ANOVA](#calculate-significant-differences-in-diversity-statistics-using-anova)
+  - [Marker vs. Sampling size simulations](#marker-vs-sampling-size-simulations)
   - [Calculate stats for manuscript](#calculate-stats-for-manuscript)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -1447,6 +1448,14 @@ The following script uses an ANOVA followed by TukeyHSD to identify significant 
 scripts/ANOVA_script.R \
 	--sumstats_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.sumstats.tsv \
 	--outpath=results/7_ANOVA/m3/
+```
+
+## Marker vs. Sampling size simulations
+
+The following script (from Andy Clark) demonstrates that Fst is accurately calculated using large numbers of variants, even with small population sizes (n = 5, as in this manuscript):
+
+```
+scripts/eelsim.txt
 ```
 
 ## Calculate stats for manuscript
