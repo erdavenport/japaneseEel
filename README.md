@@ -37,7 +37,8 @@
 RADseq of Japanese Eels
 =======
 
-This repo contains all of the scripts and log files used to process the RADseq data for the japanese eel project led by Xiaoling Gong.
+This repo contains all of the scripts and log files used to process the RADseq data for the paper ["Lack of spatial and temporal genetic structure of Japanese eel (_Anguilla japonica_) populations"](https://link.springer.com/article/10.1007/s10592-019-01146-8), led by Xiaoling Gong.
+A [PDF](https://link.springer.com/article/10.1007/s10592-019-01146-8) of the article and the [raw data](https://doi.org/10.5061/dryad.4v286) are available. 
 Note that all analyses start in the base directory. 
 
 Overview
@@ -46,16 +47,40 @@ Overview
 	|- README							# Description of analyses performed
 	|
 	|- data/							# Any data put into analyses - may be raw or processed (note: not version controlled currently due to size)
-	|    |- fastq_files					# original fastq files from Xiaoling (all merged, don't use)
-	|    |- fastq_files_updated			# fastq files by lane and run 
+	|    |- fastq_files_updated			# Contains raw fastq files
+	|    |- genomes						# Contains downloaded A. japonica reference genome
+	|    |- sample_info					# contains sample information files 
+	|    |- STACKS_processed			# Contains all of the files, processed by STACKS (not version controlled due to size)
 	|
 	|- log/								# Contains electronic lab notebook files, titled by date
 	|
 	|- scripts/							# Contains all scripts used to run analyses
 	|
 	|- results/							# Contains all output from scripts (note: not version controlled currently due to size)
-	|    |- 0_fastqc					# FastQC reports of the original sequence files
+	|    |- 1_general_info				# Contains sample and read info
+	|    |- 2_processing_info			# Contains depth and alignment info
+	|    |- 3_optimizing_depth			# Plots and stats from STACKS depth optimization
+	|    |- 4_Fst						# Fst tables and plots for each depth
+	|    |- 5_admixture					# Admixture results and plots for each depth
+	|    |- 6_PCA						# PCA plots for each depth
+	|    |- 7_ANOVA						# ANOVA p-values m3 only
 	+
+
+A table listing the Figure/Table in the final paper, script, and generated file (with location) is listed below:
+
+| Item                   | file                                                                                            | script                         |
+|------------------------|-------------------------------------------------------------------------------------------------|--------------------------------|
+| Figure 1a              | results/1\_general\_info/map\_sample\_locations.pdf                                                 | make\_map\_for\_eelseq\_project.R  |
+| Figure 1b              | results/1\_general\_info/timeline\_sample\_collection.pdf                                           | make\_map\_for\_eelseq\_project.R  |
+| Figure 2               | results/3\_optimizing\_depth/barplot\_variant\_sites\_per\_pop\_across\_min\_stack\_depths.pdf            | plot\_loci\_per\_population.R     |
+| Figure 3               | results/3\_optimizing\_depth/barplot\_diversity\_by\_population\_m3.pdf                               | plot\_loci\_per\_population.R     |
+| Figure 4a              | results/3\_optimizing\_depth/m3\_plot\_time\_distance\_by\_genetic\_distance\_yangzte.png                | plot\_Fst\_over\_time\_and\_space.R |
+| Figure 4b              | results/3\_optimizing\_depth/m3\_plot\_geographic\_distance\_by\_genetic\_distance\_no\_out\_group.pdf     | plot\_Fst\_over\_time\_and\_space.R |
+| Figure 5               | results/4\_Fst/m3/plot\_individual\_genetic\_distance\_rooted\_tree\_122018ERD.pdf                     | Fst\_analyses\_for\_eelseq.R      |
+| Figure 6               | results/6\_PCA/m3/PCA.no.outgroup.122018ERD.pdf                                                  | plot_PCA.R                     |
+| Supplementary Figure 1 | results/5\_admixture/m3/all\_individuals/plot\_admixture\_K2.pdf                                    | plot\_admixture\_barchart.R      |
+| Supplementary Table 1  | results/7\_ANOVA/m3/table\_Tukey\_ANOA\_p\_values\_11\_japanese\_eel\_pops\_whiteout\_P\_less\_than\_0.01.txt | ANOVA\_script.R                 |
+| Supplementary Table 2  | results/4\_Fst/m3/                                                                               | fst\_for\_supplementary\_table\_2  |
 # Prep sequencing data:
 
 Xiaoling obtained four sequencing files from the company who sequenced the eels (stored on cbsufsrv5 at `data2/japaneseEel/data/fastq_files_updated/`):
