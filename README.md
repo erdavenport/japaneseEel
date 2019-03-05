@@ -44,22 +44,22 @@ Note that all analyses start in the base directory.
 Overview
 -------
 	project
-	|- README					# Description of analyses performed
+	|- README				# Description of analyses performed
 	|
-	|- data/					# Any data put into analyses - may be raw or processed (note: not version controlled currently due to size)
-	|    |- fastq_files_updated			# Contains raw fastq files
-	|    |- genomes					# Contains downloaded A. japonica reference genome
-	|    |- sample_info				# contains sample information files 
-	|    |- STACKS_processed			# Contains all of the files, processed by STACKS (not version controlled due to size)
+	|- data/				# Any data put into analyses - may be raw or processed (note: not version controlled currently due to size)
+	|    |- fastq_files_updated		# Contains raw fastq files
+	|    |- genomes				# Contains downloaded A. japonica reference genome
+	|    |- sample_info			# contains sample information files 
+	|    |- STACKS_processed		# Contains all of the files, processed by STACKS (not version controlled due to size)
 	|
-	|- log/						# Contains electronic lab notebook files, titled by date
+	|- log/					# Contains electronic lab notebook files, titled by date
 	|
-	|- scripts/					# Contains all scripts used to run analyses
+	|- scripts/				# Contains all scripts used to run analyses
 	|
-	|- results/					# Contains all output from scripts (note: not version controlled currently due to size)
-	|    |- 1_general_info				# Contains sample and read info
-	|    |- 2_processing_info			# Contains depth and alignment info
-	|    |- 3_optimizing_depth			# Plots and stats from STACKS depth optimization
+	|- results/				# Contains all output from scripts (note: not version controlled currently due to size)
+	|    |- 1_general_info			# Contains sample and read info
+	|    |- 2_processing_info		# Contains depth and alignment info
+	|    |- 3_optimizing_depth		# Plots and stats from STACKS depth optimization
 	|    |- 4_Fst				# Fst tables and plots for each depth
 	|    |- 5_admixture			# Admixture results and plots for each depth
 	|    |- 6_PCA				# PCA plots for each depth
