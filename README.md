@@ -18,6 +18,7 @@
   - [Step 3: Reassemble the catalog after running corrections module](#step-3-reassemble-the-catalog-after-running-corrections-module)
   - [Step 4: Run populations module on catalog to calculate stats](#step-4-run-populations-module-on-catalog-to-calculate-stats)
   - [Step 5: Filter out samples with low calls and loci with high depth, rerun populations](#step-5-filter-out-samples-with-low-calls-and-loci-with-high-depth-rerun-populations)
+  - [Step 6: Run populations module on "meta-populations"](#step-6-run-populations-module-on-meta-populations)
     - [Final data sets](#final-data-sets)
 - [Run analyses on final data set](#run-analyses-on-final-data-set)
   - [Create basic stats plots](#create-basic-stats-plots)
@@ -27,6 +28,8 @@
     - [Admixture - all individuals](#admixture---all-individuals)
     - [Admixture - no outgroup](#admixture---no-outgroup)
   - [Run PCA](#run-pca)
+  - [Calculate significant differences in diversity statistics using ANOVA](#calculate-significant-differences-in-diversity-statistics-using-anova)
+  - [Marker vs. Sampling size simulations](#marker-vs-sampling-size-simulations)
   - [Calculate stats for manuscript](#calculate-stats-for-manuscript)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -34,25 +37,50 @@
 RADseq of Japanese Eels
 =======
 
-This repo contains all of the scripts and log files used to process the RADseq data for the japanese eel project led by Xiaoling Gong.
+This repo contains all of the scripts and log files used to process the RADseq data for the paper ["Lack of spatial and temporal genetic structure of Japanese eel (_Anguilla japonica_) populations"](https://link.springer.com/article/10.1007/s10592-019-01146-8), led by Xiaoling Gong.
+A [PDF](https://link.springer.com/article/10.1007/s10592-019-01146-8) of the article and the [raw data](https://doi.org/10.5061/dryad.4v286) are available. 
 Note that all analyses start in the base directory. 
 
 Overview
 -------
 	project
-	|- README							# Description of analyses performed
+	|- README				# Description of analyses performed
 	|
-	|- data/							# Any data put into analyses - may be raw or processed (note: not version controlled currently due to size)
-	|    |- fastq_files					# original fastq files from Xiaoling (all merged, don't use)
-	|    |- fastq_files_updated			# fastq files by lane and run 
+	|- data/				# Any data put into analyses - may be raw or processed (note: not version controlled currently due to size)
+	|    |- fastq_files_updated		# Contains raw fastq files
+	|    |- genomes				# Contains downloaded A. japonica reference genome
+	|    |- sample_info			# contains sample information files 
+	|    |- STACKS_processed		# Contains all of the files, processed by STACKS (not version controlled due to size)
 	|
-	|- log/								# Contains electronic lab notebook files, titled by date
+	|- log/					# Contains electronic lab notebook files, titled by date
 	|
-	|- scripts/							# Contains all scripts used to run analyses
+	|- scripts/				# Contains all scripts used to run analyses
 	|
-	|- results/							# Contains all output from scripts (note: not version controlled currently due to size)
-	|    |- 0_fastqc					# FastQC reports of the original sequence files
+	|- results/				# Contains all output from scripts (note: not version controlled currently due to size)
+	|    |- 1_general_info			# Contains sample and read info
+	|    |- 2_processing_info		# Contains depth and alignment info
+	|    |- 3_optimizing_depth		# Plots and stats from STACKS depth optimization
+	|    |- 4_Fst				# Fst tables and plots for each depth
+	|    |- 5_admixture			# Admixture results and plots for each depth
+	|    |- 6_PCA				# PCA plots for each depth
+	|    |- 7_ANOVA				# ANOVA p-values m3 only
 	+
+
+A table listing the Figure/Table in the final paper, script, and generated file (with location) is listed below:
+
+| Item                   | file                                                                                            | script                         |
+|------------------------|-------------------------------------------------------------------------------------------------|--------------------------------|
+| Figure 1a              | results/1\_general\_info/map\_sample\_locations.pdf                                                 | make\_map\_for\_eelseq\_project.R  |
+| Figure 1b              | results/1\_general\_info/timeline\_sample\_collection.pdf                                           | make\_map\_for\_eelseq\_project.R  |
+| Figure 2               | results/3\_optimizing\_depth/barplot\_variant\_sites\_per\_pop\_across\_min\_stack\_depths.pdf            | plot\_loci\_per\_population.R     |
+| Figure 3               | results/3\_optimizing\_depth/barplot\_diversity\_by\_population\_m3.pdf                               | plot\_loci\_per\_population.R     |
+| Figure 4a              | results/3\_optimizing\_depth/m3\_plot\_time\_distance\_by\_genetic\_distance\_yangzte.png                | plot\_Fst\_over\_time\_and\_space.R |
+| Figure 4b              | results/3\_optimizing\_depth/m3\_plot\_geographic\_distance\_by\_genetic\_distance\_no\_out\_group.pdf     | plot\_Fst\_over\_time\_and\_space.R |
+| Figure 5               | results/4\_Fst/m3/plot\_individual\_genetic\_distance\_rooted\_tree\_122018ERD.pdf                     | Fst\_analyses\_for\_eelseq.R      |
+| Figure 6               | results/6\_PCA/m3/PCA.no.outgroup.122018ERD.pdf                                                  | plot_PCA.R                     |
+| Supplementary Figure 1 | results/5\_admixture/m3/all\_individuals/plot\_admixture\_K2.pdf                                    | plot\_admixture\_barchart.R      |
+| Supplementary Table 1  | results/7\_ANOVA/m3/table\_Tukey\_ANOA\_p\_values\_11\_japanese\_eel\_pops\_whiteout\_P\_less\_than\_0.01.txt | ANOVA\_script.R                 |
+| Supplementary Table 2  | results/4\_Fst/m3/                                                                               | fst\_for\_supplementary\_table\_2  |
 # Prep sequencing data:
 
 Xiaoling obtained four sequencing files from the company who sequenced the eels (stored on cbsufsrv5 at `data2/japaneseEel/data/fastq_files_updated/`):
@@ -741,6 +769,98 @@ Rerun populations:
 	--verbose
 ```
 
+## Step 6: Run populations module on "meta-populations"
+
+One concern is that 5 individuals per population might be on the low side. 
+To address this, samples were divided into four metapopulations, and statistics on those metapopulations calculated using populations. 
+
+The four metapopulations are as follows:
+
+1. “South China Sea” includes Guangdong2009/09
+2. “East China Sea” includes Fujian2009/09, Yangtze2005/05, Yangtze2006/06, Yangtze2007/07, Yangtze2008/08, Yangzte2009/09
+3. “Yellow Sea” includes Jiangsu2009/09
+4. “Pacific Ocean” includes Chibaken2001/01 and Kagawa2001/01)
+
+First, make output directories for results:
+
+```
+# Make output directories:
+mkdir data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/four_meta_populations/
+mkdir data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/four_meta_populations/
+mkdir data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/four_meta_populations/
+```
+
+Next, run populations for each stack depth:
+
+Stack depth = 3:  
+
+```
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/ \
+	-b 1 \
+	-O data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/four_meta_populations/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107_four_meta_populations.txt \
+	-W data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r 0.6 \
+	-m 3 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+```
+
+Stack depth = 6:  
+
+```
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/ \
+	-b 3 \
+	-O data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/coverage_filtered/four_meta_populations/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107_four_meta_populations.txt \
+	-W data/STACKS_processed/4_depth_optimization/m6/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r 0.6 \
+	-m 6 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+```
+
+Stack depth = 10:  
+
+```
+/programs/stacks-1.48/bin/populations \
+	-P data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/ \
+	-b 4 \
+	-O data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/coverage_filtered/four_meta_populations/ \
+	-M data/sample_info/population_file_for_stacks_no_JJ-107_four_meta_populations.txt \
+	-W data/STACKS_processed/4_depth_optimization/m10/rxstacks_corrected/whitelist_loci_after_coverage_filtering.txt \
+	-t 4 \
+	-s \
+	-p 1 \
+	-r 0.6 \
+	-m 10 \
+	--write_single_snp \
+	--fstats \
+	--genomic \
+	--vcf \
+	--plink \
+	--phylip \
+	--verbose
+```
+
 ### Final data sets
 
 The final datasets for each read depth are in the following directories on `cbsulm06`:
@@ -800,7 +920,8 @@ scripts/plot_loci_per_population.R \
 
 ![pi per pop](results/3_optimizing_depth/barplot_diversity_by_population_m3.png)
 
-Look at genetic distance versus geographic distance and temporal distance:
+Look at genetic distance versus geographic distance and temporal distance.
+This script uses a Mantel test to assess significance:
 
 ```
 scripts/plot_Fst_over_time_and_space.R \
@@ -1344,13 +1465,31 @@ scripts/plot_PCA.R \
 
 ![m10 PCA no outgroup](results/6_PCA/m10/PCA.no.outgroup.122018ERD.png)
 
+## Calculate significant differences in diversity statistics using ANOVA
+
+The following script uses an ANOVA followed by TukeyHSD to identify significant differences between each pair of populations in the study: 
+
+```
+scripts/ANOVA_script.R \
+	--sumstats_file=data/STACKS_processed/4_depth_optimization/m3/rxstacks_corrected/coverage_filtered/batch_1.sumstats.tsv \
+	--outpath=results/7_ANOVA/m3/
+```
+
+## Marker vs. Sampling size simulations
+
+The following script (from Andy Clark) demonstrates that Fst is accurately calculated using large numbers of variants, even with small population sizes (n = 5, as in this manuscript):
+
+```
+scripts/eelsim.txt
+```
+
 ## Calculate stats for manuscript
 
 ```
 scripts/stats_in_paper.R
 ```
 
-This produces a text table at `results/1_general_info/stats_for_paper.txt` that lists all of the statistics reported in the manuscript. 
-The script currently isn't done. 
+This produces a text table at `results/1_general_info/stats_for_paper.txt` that lists all of the statistics reported in the text of the manuscript. 
+ 
 
 
